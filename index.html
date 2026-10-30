@@ -306,6 +306,7 @@ a.docbtn{text-decoration:none}
 .dl>*{min-width:0}
 .dlv{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in;border-radius:12px}
 .dlbs{display:flex;flex-direction:column;gap:10px}
+.dlbs.top{flex-direction:row;flex-wrap:wrap;margin:0 0 40px}
 .dlb svg{flex-shrink:0}
 .dlb{border:0;cursor:pointer;font:inherit;text-decoration:none}
 .dlb.ghost{background:transparent;color:inherit;border:1px solid var(--line)}
@@ -406,7 +407,6 @@ a.docbtn{text-decoration:none}
       <div><dt>산출물</dt><dd>화면 설계, 버튼 동작 정의서 v0.4</dd></div>
     </dl>
   </div>
-  <button type="button" class="docbtn" data-jump="slides-cg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>동작 정의서 바로 보기</span><em>17쪽</em></button>
   <figure><div class="shot"><img src="img-01.webp" alt="실시간 상황판. 진행 중 통화 목록, 신고자와 근무자의 대화, 위치 지도와 AI 사건 요약, 자동 교정된 단어" loading="lazy"></div>
     <figcaption>실시간 상황판. 통화를 고르면 대화, 요약, 지도, 교정 단어가 모두 그 통화로 바뀌고, 다른 통화는 끊기지 않고 목록에서 계속 진행됩니다.</figcaption></figure>
   <div class="two">
@@ -459,7 +459,6 @@ a.docbtn{text-decoration:none}
       <div><dt>형태</dt><dd>16:9 발표용 기획서 15장</dd></div>
     </dl>
   </div>
-  <button type="button" class="docbtn" data-jump="slides-sc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>기획서 바로 보기</span><em>15쪽</em></button>
   <div class="cols">
     <figure style="margin:0"><div class="shot"><img src="img-02.webp" alt="센서가 들어간 숟가락과 젓가락, 염분과 식사 속도를 보여 주는 연동 앱" style="box-shadow:none" loading="lazy"></div><figcaption>숟가락과 젓가락에 센서를 넣고, 앱이 식습관을 자동으로 기록합니다.</figcaption></figure>
     <div>
@@ -531,7 +530,10 @@ a.docbtn{text-decoration:none}
       <div><dt>데이터</dt><dd>서울 열린데이터광장 2종 결합, 2015.01–2023.08</dd></div>
     </dl>
   </div>
-  <button type="button" class="docbtn" data-jump="slides-sw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>발표 자료 바로 보기</span><em>13쪽</em></button>
+  <div class="dlbs top">
+      <button type="button" class="dlb" data-jump="slides-sw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>슬라이드 보기</button>
+      <a class="dlb ghost" href="seoul-subway-analysis.pptx" download="지하철데이터분석_윤희경.pptx" aria-label="발표 자료 PPT 다운로드 (13쪽, 약 3.9MB)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>PPT 받기</a>
+  </div>
   <div class="stats">
     <p><strong>104개월</strong><span>1–9호선 시간대별 승하차 기록</span></p>
     <p><strong>6.1만 행</strong><span>역 × 월 단위로 합산</span></p>
@@ -560,14 +562,6 @@ a.docbtn{text-decoration:none}
     <figure><img src="ppt-12.webp" width="1400" height="788" loading="lazy" decoding="async" alt="서울 지하철 데이터 분석 발표 자료 12쪽"><figcaption>12 / 13</figcaption></figure>
     <figure><img src="ppt-13.webp" width="1400" height="788" loading="lazy" decoding="async" alt="서울 지하철 데이터 분석 발표 자료 13쪽"><figcaption>13 / 13</figcaption></figure>
   </section>
-  <div class="dl">
-    <button type="button" class="dlv" data-jump="slides-sw" aria-label="발표 자료 슬라이드로 크게 보기"><img src="ppt-cover.webp" width="960" height="540" loading="lazy" alt="서울 지하철 데이터 분석 발표 자료 표지"></button>
-    <div class="dlt"><small>발표 자료</small><b>데이터로 알아보는 서울 지하철</b><span>PowerPoint · 13쪽 · 약 3.9MB</span></div>
-    <div class="dlbs">
-      <button type="button" class="dlb" data-jump="slides-sw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>슬라이드 보기</button>
-      <a class="dlb ghost" href="seoul-subway-analysis.pptx" download="지하철데이터분석_윤희경.pptx" aria-label="발표 자료 PPT 다운로드 (13쪽, 약 3.9MB)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>PPT 받기</a>
-    </div>
-  </div>
   <a class="next" href="#cg"><span class="nl"><small>다음 작업</small><b>해양경찰청 통합상황실 UI</b></span><span class="na"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
 </div></article>
 
@@ -584,7 +578,6 @@ a.docbtn{text-decoration:none}
       <div><dt>타깃</dt><dd>처음 이사하는 서울의 1인 가구(29세 이하, 30대)</dd></div>
     </dl>
   </div>
-  <button type="button" class="docbtn" data-jump="slides-ca"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>디자인 시스템 바로 보기</span><em>12쪽</em></button>
   <div class="stats">
     <p><strong>804.5만</strong><span>1인 가구 수, 처음으로 800만 돌파</span></p>
     <p><strong>36.1%</strong><span>전체 가구 중 1인 가구 비중</span></p>
