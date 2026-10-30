@@ -428,6 +428,24 @@ a.ct:hover{transform:translateY(-6px)}a.ct:hover b{text-decoration:underline;tex
   .pf-me{padding-top:8px}
   .cts{gap:36px 12px}.ct{flex-basis:calc((100% - 12px)/2)}
 }
+
+/* ===== PC 한 화면 맞춤 + 글라스 폴더 ===== */
+@media (min-width: 1024px) {
+  .cover { height: calc(100svh - 72px - 34px); min-height: 560px; }
+  .cv-big { width: min(24vw, 34vh, 400px); }
+  #v-home .panel {
+    min-height: calc(100svh - 72px - 32px);
+    display: flex; flex-direction: column; justify-content: center;
+    scroll-margin-top: 88px;
+  }
+}
+.cv-word { transform: translate(-50%, -6%); }
+
+.cv-big svg { filter: drop-shadow(0 24px 36px rgba(58, 40, 200, .16)); }
+.cv-big svg > path:nth-of-type(1) { opacity: .38; }
+.cv-big svg > rect { opacity: .6; }
+.cv-big svg > path:nth-of-type(2) { fill-opacity: .32; stroke: rgba(255,255,255,.85); stroke-width: 2.5; }
+.cv-big svg > path:nth-of-type(3) { stroke-opacity: .95; }
 </style>
 </head>
 <body>
