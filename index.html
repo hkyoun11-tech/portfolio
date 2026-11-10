@@ -12,7 +12,7 @@
   --paper:#FAF5EC; --card:#FFFDF8; --ink:#2A241E; --ink2:#4B4239; --sub:#7D7064; --line:#E9DFD0;
   --hl:#FFE08A; --hl-ink:#1E1E1A; --nav:rgba(250,245,236,.8);
   --brand:#B8432A; --brand-ink:#FFFFFF;
-  --cg:#3653E8; --sc:#0F7A64; --sw:#0B8A47; --ca:#7A4DF0;--ep:#A65A16;
+  --cg:#3653E8; --sc:#0F7A64; --sw:#0B8A47; --ca:#7A4DF0;--ep:#A65A16;--pk:#D94A78;
   --cg-t:#E1E7FF; --sc-t:#DDF3EB; --sw-t:#FFF3BF; --ca-t:#ECE4FF;
   color-scheme:light;
 }
@@ -20,13 +20,13 @@
   --paper:#17130F; --card:#221C17; --ink:#F3EBDF; --ink2:#D8CCBD; --sub:#A99B8B; --line:#382E25;
   --hl:#FFE08A; --nav:rgba(23,19,15,.8);
   --brand:#FF9C7C; --brand-ink:#17130F;
-  --cg:#8DA2FF; --sc:#5FD3B5; --sw:#5AD08C; --ca:#B49BFF;--ep:#E39A45;
+  --cg:#8DA2FF; --sc:#5FD3B5; --sw:#5AD08C; --ca:#B49BFF;--ep:#E39A45;--pk:#F58BAE;
   --cg-t:#1E2340; --sc-t:#16302A; --sw-t:#2E2A14; --ca-t:#261E40; color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#17130F; --card:#221C17; --ink:#F3EBDF; --ink2:#D8CCBD; --sub:#A99B8B; --line:#382E25;
   --hl:#FFE08A; --nav:rgba(23,19,15,.8);
   --brand:#FF9C7C; --brand-ink:#17130F;
-  --cg:#8DA2FF; --sc:#5FD3B5; --sw:#5AD08C; --ca:#B49BFF;--ep:#E39A45;
+  --cg:#8DA2FF; --sc:#5FD3B5; --sw:#5AD08C; --ca:#B49BFF;--ep:#E39A45;--pk:#F58BAE;
   --cg-t:#1E2340; --sc-t:#16302A; --sw-t:#2E2A14; --ca-t:#261E40; color-scheme:dark}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
@@ -120,7 +120,7 @@ td.us{font-weight:700;color:var(--accent)}
 .next small{display:block;font-size:14px;color:var(--sub);margin-bottom:6px}
 .next span{font-family:"Gothic A1","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:clamp(26px,3.4vw,40px);font-weight:800;letter-spacing:-.03em}
 .next:hover span{text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:2px}
-#v-cg{--accent:var(--cg);--tint:var(--cg-t)} #v-sc{--accent:var(--sc);--tint:var(--sc-t)} #v-sw{--accent:var(--sw);--tint:var(--sw-t)} #v-ca{--accent:var(--ca);--tint:var(--ca-t)}
+#v-sc{--accent:var(--sc);--tint:var(--sc-t)} #v-sw{--accent:var(--sw);--tint:var(--sw-t)} #v-ca{--accent:var(--ca);--tint:var(--ca-t)}
 
 /* about */
 .about{padding:48px 0 40px}
@@ -512,7 +512,7 @@ a.chc:hover .ch-go{gap:10px}
     <a class="back" href="#home">처음으로</a>
     <h1 class="ttl" id="contents-h"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><span class="sel">Contents<svg class="cur" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 8-6 1.6L10.5 19z" fill="#fff" stroke="#16161D" stroke-width="1.6" stroke-linejoin="round"/></svg></span></h1>
     <svg class="cv-waves" viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true"><path d="M-20 260C200 120 380 520 640 380S960 160 1220 300"/><path d="M-20 560C240 440 460 680 720 560S1020 420 1220 500"/></svg>
-    <div class="cts"><a class="ct" href="#ca" data-deck="slides-ca" style="--c:var(--ca)"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><b>01. carry</b><span>서비스 기획 · UX/UI</span></a><a class="ct" href="#sc" data-deck="slides-sc" style="--c:var(--sc)"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><b>02. Smart Cutlery</b><span>제품 기획 · 마케팅 전략</span></a><a class="ct" href="#sw" data-deck="slides-sw" style="--c:var(--sw)"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><b>03. 서울 지하철</b><span>데이터 분석 · 시각화</span></a><a class="ct" href="#cg" data-deck="slides-cg" style="--c:var(--cg)"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><b>04. 해경 통합상황실</b><span>화면 기획 · UI 디자인</span></a><a class="ct" href="erp/" data-erp style="--c:var(--ep)"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><b>05. ERP 프로젝트</b><span>ERP 설계 · 프로토타입</span></a></div>
+    <div class="cts"><a class="ct" href="#ca" data-deck="slides-ca" style="--c:var(--ca)"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><b>01. carry</b><span>서비스 기획 · UX/UI</span></a><a class="ct" href="#sc" data-deck="slides-sc" style="--c:var(--sc)"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><b>02. Smart Cutlery</b><span>제품 기획 · 마케팅 전략</span></a><a class="ct" href="#sw" data-deck="slides-sw" style="--c:var(--sw)"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><b>03. 서울 지하철</b><span>데이터 분석 · 시각화</span></a><a class="ct" href="package/" data-frame="package/" data-title="04. 패키지 디자인" style="--c:var(--pk)"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><b>04. 패키지 디자인</b><span>브랜드 콘셉트 · 패키지 디자인</span></a><a class="ct" href="erp/" data-erp style="--c:var(--ep)"><svg class="fd" viewBox="0 0 120 92" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8h30a8 8 0 0 1 6 2.6L54 13h54a8 8 0 0 1 8 8v59a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd2))" opacity=".75"/><path d="M4 30a8 8 0 0 1 8-8h96a8 8 0 0 1 8 8v50a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8z" fill="var(--c,var(--fd1))"/><path d="M12 26h96" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/></svg><b>05. ERP 프로젝트</b><span>ERP 설계 · 프로토타입</span></a></div>
   </section>
 </div>
 
@@ -555,57 +555,6 @@ a.chc:hover .ch-go{gap:10px}
 </div>
 
 <!-- CG -->
-<article data-view="cg" id="v-cg" class="pb"><div class="wrap">
-  <div class="phead">
-    <a class="back" href="#work">작업 목록으로</a>
-    <p class="ptag">상황실 UI 설계, 진행 중</p>
-    <h1>신고 통화가 이어지는 동안, 사건이 화면 위에서 정리되도록</h1>
-    <p class="key">해양 조난 신고 통화를 <span class="mark">실시간 대화, AI 사건 요약, 위치 지도로 한 화면에 동시에 정리</span>하는 해양경찰청 통합상황실 화면을 기획하고 디자인했습니다.</p>
-    <dl class="meta">
-      <div><dt>역할</dt><dd>화면 기획, UI 디자인</dd></div>
-      <div><dt>기준</dt><dd>KRDS(정부 디자인 시스템), 라이트 모드</dd></div>
-      <div><dt>범위</dt><dd>실시간 상황판, 사건 목록, 사건 상세</dd></div>
-      <div><dt>산출물</dt><dd>화면 설계, 버튼 동작 정의서 v0.4</dd></div>
-    </dl>
-  </div>
-  <figure><div class="shot"><img src="img-01.webp" alt="실시간 상황판. 진행 중 통화 목록, 신고자와 근무자의 대화, 위치 지도와 AI 사건 요약, 자동 교정된 단어" loading="lazy"></div>
-    <figcaption>실시간 상황판. 통화를 고르면 대화, 요약, 지도, 교정 단어가 모두 그 통화로 바뀌고, 다른 통화는 끊기지 않고 목록에서 계속 진행됩니다.</figcaption></figure>
-  <div class="two">
-    <figure><div class="shot"><img src="img-18.webp" alt="사건 목록. 방금 저장한 사건이 파란 배경으로 강조되고 저장 완료 알림이 떠 있다" loading="lazy"></div><figcaption>통화를 끝내고 저장하면 사건 목록으로 이동하고, 새 사건이 강조됩니다.</figcaption></figure>
-    <figure><div class="shot"><img src="img-19.webp" alt="사건 상세. 출동 함정 경로가 표시된 지도, 사건 정보와 처리 이력, AI 보고서 초안" loading="lazy"></div><figcaption>사건 상세. 출동 함정과 주변 선박을 지도에 겹쳐 보고, AI 보고서 초안을 담당자가 고칩니다.</figcaption></figure>
-  </div>
-  <h2>설계하며 정한 것들</h2>
-  <ul class="list">
-    <li><b>통화 종료는 한 번 더 묻습니다</b>사건명, 위험도, 위치, 통화 시간을 보여 주는 확인 팝업으로 실수로 끊는 일을 막았습니다.</li>
-    <li><b>근무자 메모는 내부 기록입니다</b>신고자에게 전달되지 않고 대화 흐름 안에 표시되며, 저장하면 처리 이력에 함께 남습니다.</li>
-    <li><b>빈 표 대신 다음 행동을 보여 줍니다</b>검색 결과가 없으면 안내와 조건 초기화 버튼을 띄우고, 목록으로 돌아와도 검색 조건은 유지됩니다.</li>
-    <li><b>AI 초안은 사람이 확정합니다</b>보고서 초안을 항목별로 고칠 수 있고, 저장하지 않고 나가면 확인 팝업을 띄웁니다.</li>
-    <li><b>상태는 한곳에서 바꿔도 모두 맞춰집니다</b>처리 상태를 저장하면 배지, 처리 이력, 목록의 상태 칸이 함께 갱신됩니다.</li>
-    <li><b>권한이 없는 메뉴도 자리는 그대로</b>시스템 관리처럼 권한이 없는 메뉴는 회색 비활성으로 표시했습니다.</li>
-  </ul>
-  <p class="note">화면 속 신고 내용과 인물, 함정 정보는 모두 설계용 가상 데이터입니다.</p>
-  <section class="slides" id="slides-cg" aria-labelledby="slides-cg-h">
-    <h2 id="slides-cg-h">해양경찰청 통합상황실 UI 버튼 동작 정의서</h2>
-    <figure><img src="doc-01%20%2810%29.webp" width="1440" height="1003" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 1쪽"><figcaption>1 / 17</figcaption></figure>
-    <figure><img src="doc-02%20%288%29.webp" width="1440" height="1172" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 2쪽"><figcaption>2 / 17</figcaption></figure>
-    <figure><img src="doc-03%20%289%29.webp" width="1440" height="1208" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 3쪽"><figcaption>3 / 17</figcaption></figure>
-    <figure><img src="doc-04%20%2812%29.webp" width="1440" height="1186" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 4쪽"><figcaption>4 / 17</figcaption></figure>
-    <figure><img src="doc-05%20%287%29.webp" width="1440" height="1234" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 5쪽"><figcaption>5 / 17</figcaption></figure>
-    <figure><img src="doc-06%20%282%29.webp" width="1440" height="1286" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 6쪽"><figcaption>6 / 17</figcaption></figure>
-    <figure><img src="doc-07%20%285%29.webp" width="1440" height="1234" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 7쪽"><figcaption>7 / 17</figcaption></figure>
-    <figure><img src="doc-08%20%2813%29.webp" width="1440" height="1151" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 8쪽"><figcaption>8 / 17</figcaption></figure>
-    <figure><img src="doc-09%20%2814%29.webp" width="1440" height="1124" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 9쪽"><figcaption>9 / 17</figcaption></figure>
-    <figure><img src="doc-10%20%284%29.webp" width="1440" height="1120" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 10쪽"><figcaption>10 / 17</figcaption></figure>
-    <figure><img src="doc-11%20%281%29.webp" width="1440" height="1095" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 11쪽"><figcaption>11 / 17</figcaption></figure>
-    <figure><img src="doc-12%20%2811%29.webp" width="1440" height="1466" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 12쪽"><figcaption>12 / 17</figcaption></figure>
-    <figure><img src="doc-13%20%283%29.webp" width="1440" height="1466" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 13쪽"><figcaption>13 / 17</figcaption></figure>
-    <figure><img src="doc-14%20%286%29.webp" width="1440" height="1466" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 14쪽"><figcaption>14 / 17</figcaption></figure>
-    <figure><img src="doc-15%20%2815%29.webp" width="1440" height="1466" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 15쪽"><figcaption>15 / 17</figcaption></figure>
-    <figure><img src="doc-16.webp" width="1440" height="1466" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 16쪽"><figcaption>16 / 17</figcaption></figure>
-    <figure><img src="doc-17.webp" width="1440" height="1466" loading="lazy" decoding="async" alt="해양경찰청 통합상황실 UI 버튼 동작 정의서 17쪽"><figcaption>17 / 17</figcaption></figure>
-  </section>
-  <a class="next" href="#ca"><span class="nl"><small>처음 작업으로</small><b>carry</b></span><span class="na"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
-</div></article>
 
 <!-- SC -->
 <article data-view="sc" id="v-sc" class="pb"><div class="wrap">
@@ -723,7 +672,7 @@ a.chc:hover .ch-go{gap:10px}
     <figure><img src="ppt-12.webp" width="1400" height="788" loading="lazy" decoding="async" alt="서울 지하철 데이터 분석 발표 자료 12쪽"><figcaption>12 / 13</figcaption></figure>
     <figure><img src="ppt-13.webp" width="1400" height="788" loading="lazy" decoding="async" alt="서울 지하철 데이터 분석 발표 자료 13쪽"><figcaption>13 / 13</figcaption></figure>
   </section>
-  <a class="next" href="#cg"><span class="nl"><small>다음 작업</small><b>해양경찰청 통합상황실 UI</b></span><span class="na"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+  <a class="next" href="package/" data-frame="package/" data-title="04. 패키지 디자인"><span class="nl"><small>다음 작업</small><b>패키지 디자인</b></span><span class="na"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
 </div></article>
 
 <!-- CA -->
@@ -808,7 +757,7 @@ a.chc:hover .ch-go{gap:10px}
 <script>
 (function(){
   var views=[].slice.call(document.querySelectorAll('[data-view]'));
-  var names={home:'윤희경',cg:'해양경찰청 통합상황실 UI',sc:'Smart Cutlery',sw:'서울 지하철 데이터 분석',ca:'carry',about:'소개',contents:'Contents',channel:'Channel'};
+  var names={home:'윤희경',sc:'Smart Cutlery',sw:'서울 지하철 데이터 분석',ca:'carry',about:'소개',contents:'Contents',channel:'Channel'};
   function route(){
     var h=(location.hash||'#home').slice(1);
     var target=h, anchor=null;
@@ -833,8 +782,8 @@ a.chc:hover .ch-go{gap:10px}
 
 <script>
 (function(){
-  var order=['ca','sc','sw','cg'];
-  var short={cg:'해경 통합상황실',sc:'Smart Cutlery',sw:'서울 지하철',ca:'carry'};
+  var order=['ca','sc','sw'];
+  var short={sc:'Smart Cutlery',sw:'서울 지하철',ca:'carry'};
   function cur(){return (location.hash||'#home').slice(1)}
   document.addEventListener('keydown',function(e){
     if(e.target.closest&&e.target.closest('input,textarea'))return;
@@ -879,14 +828,16 @@ a.chc:hover .ch-go{gap:10px}
     if(io)io.disconnect();io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){i=figs.indexOf(en.target);count()}})},{root:sc,rootMargin:'-10% 0px -80% 0px'});
     figs.forEach(function(f){io.observe(f)});
     i=Math.max(0,Math.min(k||0,figs.length-1));count();requestAnimationFrame(function(){to(i,false)});x.focus()}
-  function erp(){back=document.activeElement;sc.innerHTML='';figs=[];if(io)io.disconnect();
-    var f=document.createElement('iframe');f.src='erp/';f.title='브루라인 ERP';
+  function erp(){frame('erp/','05. ERP 프로젝트')}
+  function frame(src,title){back=document.activeElement;sc.innerHTML='';figs=[];if(io)io.disconnect();
+    var f=document.createElement('iframe');f.src=src;f.title=title;
     f.onload=function(){try{[].forEach.call(f.contentDocument.querySelectorAll('a[href="../"]'),function(a){a.addEventListener('click',function(ev){ev.preventDefault();close()})})}catch(_){}};
-    sc.appendChild(f);tt.textContent='05. ERP 프로젝트';nn.textContent='';go_.hidden=true;
+    sc.appendChild(f);tt.textContent=title;nn.textContent='';go_.hidden=true;
     lb.classList.add('erp');lb.hidden=false;lb.classList.add('on');document.body.style.overflow='hidden';x.focus()}
   function close(){if(io)io.disconnect();lb.classList.remove('on','erp');lb.hidden=true;document.body.style.overflow='';sc.innerHTML='';figs=[];if(back)back.focus()}
   document.addEventListener('click',function(e){
     var ep=e.target.closest('[data-erp]');if(ep&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey){e.preventDefault();erp();return}
+    var fr=e.target.closest('[data-frame]');if(fr&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey){e.preventDefault();frame(fr.dataset.frame,fr.dataset.title);return}
     var dk=e.target.closest('[data-deck]');if(dk&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey){e.preventDefault();open(dk.dataset.deck,0);return}
     var b=e.target.closest('[data-jump]');if(b){open(b.dataset.jump,0);return}
     if(e.target.closest('#lb'))return;
