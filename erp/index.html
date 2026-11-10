@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>브루라인 ERP | 카페 ERP 설계와 프로토타입</title>
+<meta name="description" content="오피스 상권 카페의 판매, 재고, 발주, 원가를 하나로 잇고 날씨로 손님 수를 예측하는 경량 ERP 설계와 프로토타입">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#F1F3F2; --surface:#FFFFFF; --surface-2:#E7EBE9; --ink:#2A1E17; --ink-2:#5B6460; --line:#CFD5D2;
+  --hot:#A65A16; --hot-soft:#F5E6D6; --ice:#2A6E9E; --ice-soft:#DCE9F3;
+  --danger:#B3261E; --danger-soft:#F7DEDC; --ok:#2F6B3E; --ok-soft:#DDECE0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#16120F; --surface:#211B17; --surface-2:#2B241F; --ink:#EFE8E1; --ink-2:#A89E95; --line:#3D352F;
+    --hot:#E39A45; --hot-soft:#3A2816; --ice:#6CB0DF; --ice-soft:#16293A;
+    --danger:#F07167; --danger-soft:#3D1C1A; --ok:#7BC08A; --ok-soft:#1B2E20;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16120F; --surface:#211B17; --surface-2:#2B241F; --ink:#EFE8E1; --ink-2:#A89E95; --line:#3D352F;
+  --hot:#E39A45; --hot-soft:#3A2816; --ice:#6CB0DF; --ice-soft:#16293A;
+  --danger:#F07167; --danger-soft:#3D1C1A; --ok:#7BC08A; --ok-soft:#1B2E20;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:17px;line-height:1.75;word-break:keep-all;-webkit-font-smoothing:antialiased}
+img,svg{max-width:100%}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ice);outline-offset:2px;border-radius:4px}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.prose{max-width:44rem}
+.prose p{margin:0 0 1.1em}
+
+/* 상단 내비게이션 */
+.topnav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topnav .wrap{display:flex;align-items:center;gap:24px;height:56px}
+.brand{font-weight:800;letter-spacing:-.02em;text-decoration:none;white-space:nowrap}
+.brand small{font-weight:500;color:var(--ink-2);margin-left:6px}
+.topnav ul{display:flex;gap:4px;list-style:none;margin:0 0 0 auto;padding:0;overflow-x:auto;scrollbar-width:none}
+.topnav ul::-webkit-scrollbar{display:none}
+.topnav a.nl{display:block;padding:6px 10px;font-size:14px;color:var(--ink-2);text-decoration:none;border-radius:6px;white-space:nowrap}
+.topnav a.nl:hover{color:var(--ink);background:var(--surface-2)}
+
+/* 히어로 */
+.hero{padding:72px 0 64px;border-bottom:1px solid var(--line)}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.hero .h1{font-size:clamp(38px,6vw,72px);line-height:1.12;letter-spacing:-.04em;font-weight:820;margin:0 0 24px}
+.hero .lead{font-size:19px;color:var(--ink-2);max-width:34rem;margin:0 0 28px}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:6px 20px;margin:0 0 32px;font-size:15px}
+.meta dt{color:var(--ink-2)}
+.meta dd{margin:0}
+.cta{display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;padding:10px 16px;border-radius:8px;
+  border:1px solid var(--ink);background:var(--ink);color:var(--bg);text-decoration:none;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.sm{font-size:13px;padding:6px 10px;border-radius:6px}
+
+/* 히어로 연쇄 장면 */
+.chain{position:relative;padding:8px 0}
+.receipt{background:var(--surface);border:1px solid var(--line);border-radius:4px 4px 0 0;padding:18px 20px 22px;width:min(320px,100%);
+  font-size:14px;position:relative;box-shadow:0 1px 0 var(--line)}
+.receipt::after{content:"";position:absolute;left:-1px;right:-1px;bottom:-8px;height:8px;
+  background:linear-gradient(-45deg,transparent 6px,var(--surface) 0) 0 0/12px 8px,linear-gradient(45deg,transparent 6px,var(--surface) 0) 0 0/12px 8px}
+.receipt .rh{display:flex;justify-content:space-between;color:var(--ink-2);font-size:13px;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:10px}
+.receipt .ri{display:flex;justify-content:space-between;font-weight:650;font-size:16px}
+.tag{display:inline-block;font-size:12px;font-weight:650;padding:1px 7px;border-radius:999px;margin-left:6px;vertical-align:2px}
+.tag.ice{background:var(--ice-soft);color:var(--ice)}
+.tag.hot{background:var(--hot-soft);color:var(--hot)}
+.chain .stem{width:2px;height:28px;background:var(--line);margin:14px 0 10px 30px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;max-width:440px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:14px}
+.chip b{font-weight:700;color:var(--ice)}
+.chip.key{border-color:var(--hot)}
+.chip.key b{color:var(--hot)}
+.result{margin-top:4px;background:var(--hot-soft);border-left:3px solid var(--hot);padding:12px 16px;border-radius:0 8px 8px 0;font-size:15px;max-width:440px}
+.result strong{display:block;font-size:16px}
+.caption{font-size:13px;color:var(--ink-2);margin-top:14px}
+@media (prefers-reduced-motion:no-preference){
+  .chain .seq{opacity:0;animation:rise .5s ease-out forwards}
+  .chain .s1{animation-delay:.2s}.chain .s2{animation-delay:.7s}.chain .s3{animation-delay:1.0s}
+  .chain .s4{animation-delay:1.15s}.chain .s5{animation-delay:1.3s}.chain .s6{animation-delay:1.45s}
+  .chain .s7{animation-delay:1.6s}.chain .s8{animation-delay:1.75s}.chain .s9{animation-delay:2.4s}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+
+/* 본문 섹션 */
+section.cs{padding:80px 0;border-bottom:1px solid var(--line)}
+section.cs h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.03em;line-height:1.25;margin:0 0 20px;font-weight:780}
+section.cs h3{font-size:20px;letter-spacing:-.02em;margin:40px 0 12px;font-weight:720}
+.note{font-size:14px;color:var(--ink-2)}
+.problems{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:32px 0 8px;border-top:2px solid var(--ink)}
+.problems div{padding:20px 20px 4px 0;border-right:1px solid var(--line)}
+.problems div+div{padding-left:20px}
+.problems div:last-child{border-right:0}
+.problems h3{margin:0 0 8px;font-size:18px}
+.problems p{margin:0;font-size:15px;color:var(--ink-2)}
+
+.asis{display:flex;gap:16px;align-items:stretch;margin:24px 0 8px;flex-wrap:wrap}
+.asis .box{flex:1 1 180px;border:1px dashed var(--ink-2);border-radius:8px;padding:14px 16px;background:var(--surface)}
+.asis .box b{display:block}
+.asis .box span{font-size:14px;color:var(--ink-2)}
+.asis .gap{align-self:center;font-size:13px;color:var(--danger);white-space:nowrap}
+ol.loop{list-style:none;counter-reset:s;padding:0;margin:24px 0 0;display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+ol.loop li{counter-increment:s;padding:16px 14px;border-right:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+ol.loop li:last-child{border-right:0}
+ol.loop li::before{content:counter(s);display:block;font-size:28px;font-weight:800;color:var(--ink);line-height:1;margin-bottom:10px;letter-spacing:-.03em}
+ol.loop li b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+ol.loop li.hl{background:var(--hot-soft)}
+.loopback{font-size:14px;color:var(--ink-2);margin-top:10px}
+
+.ia{display:grid;grid-template-columns:repeat(3,1fr);gap:28px 32px;margin-top:28px}
+.ia div{border-top:1px solid var(--ink);padding-top:12px}
+.ia b{font-size:17px}
+.ia p{margin:4px 0 0;font-size:15px;color:var(--ink-2)}
+
+.erd{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:28px}
+.ent{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px}
+.ent b{display:block;font-size:14px;margin-bottom:2px}
+.ent code{font-family:inherit;color:var(--ink-2);display:block;font-size:12px;margin-bottom:6px}
+.ent ul{margin:0;padding:0;list-style:none;color:var(--ink-2)}
+.ent.path{border-color:var(--hot);border-width:2px;padding:9px 11px}
+.ent.path b{color:var(--hot)}
+
+.formula{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:16px 0;font-size:16px;overflow-x:auto}
+.formula .f{font-size:18px;font-weight:650;white-space:nowrap}
+.tbl-wrap{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-weight:650;color:var(--ink-2);font-size:13px;white-space:nowrap}
+td.r,th.r{text-align:right}
+.refs{font-size:14px;color:var(--ink-2);padding-left:20px}
+.refs li{margin-bottom:8px}
+.refs a{color:var(--ice)}
+
+/* ===== ERP 프로그램 ===== */
+:root{
+  --primary:#1D5FC2; --primary-ink:#FFFFFF; --primary-soft:#E4EDFA;
+  --head:#1E2731; --head-2:#2A3541; --head-ink:#E6EBF0; --head-ink-2:#93A1AF;
+  --work:#EAEDF0; --gridhead:#F3F5F7; --sel:#E4EDFA;
+  --ice:#0C7A9E; --ice-soft:#D6EEF5;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --primary:#5C9CF2; --primary-ink:#0C1520; --primary-soft:#1A2B44;
+    --head:#0E1318; --head-2:#18202A; --head-ink:#E6EBF0; --head-ink-2:#8593A1;
+    --work:#141210; --gridhead:#2A231E; --sel:#1F2C3E; --ice:#5CC3E3; --ice-soft:#123040;
+  }
+}
+:root[data-theme="dark"]{
+  --primary:#5C9CF2; --primary-ink:#0C1520; --primary-soft:#1A2B44;
+  --head:#0E1318; --head-2:#18202A; --head-ink:#E6EBF0; --head-ink-2:#8593A1;
+  --work:#141210; --gridhead:#2A231E; --sel:#1F2C3E; --ice:#5CC3E3; --ice-soft:#123040;
+}
+
+.intro{padding:28px 0 18px}
+.intro .wrap{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.intro h1{font-size:clamp(28px,3.6vw,40px);letter-spacing:-.035em;line-height:1.2;margin:0 0 6px;font-weight:800}
+.intro p{margin:0;color:var(--ink-2);font-size:16px;max-width:42rem}
+.intro .how{font-size:14px;color:var(--ink-2);text-align:right}
+.intro .how a{color:var(--ink);font-weight:600}
+.shell{max-width:1480px;margin:0 auto;padding:0 16px 56px;border-bottom:1px solid var(--line)}
+
+.erp{position:relative;height:clamp(660px,calc(100svh - 150px),920px);display:grid;grid-template-rows:48px 34px minmax(0,1fr) 26px;
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--work);font-size:13px;line-height:1.5;
+  box-shadow:0 18px 40px -24px rgba(30,39,49,.45)}
+.erp button{font:inherit;color:inherit}
+.erp input,.erp select{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:4px;height:28px;padding:0 8px}
+.erp input[type=checkbox]{height:15px;width:15px;padding:0;accent-color:var(--primary)}
+.erp input[type=range]{padding:0;border:0;background:none;accent-color:var(--hot)}
+.erp input:focus-visible,.erp select:focus-visible{outline:2px solid var(--primary);outline-offset:0}
+.ico{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* 상단 바 */
+.e-top{background:var(--head);color:var(--head-ink);display:flex;align-items:center;gap:10px;padding:0 10px 0 6px}
+.e-ham{display:none;background:none;border:0;padding:6px;cursor:pointer;border-radius:4px}
+.e-logo{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.01em;font-size:14px;padding:0 8px 0 6px;white-space:nowrap}
+.e-logo .mk{width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,var(--hot) 0 50%,var(--ice) 50% 100%);display:grid;place-items:center}
+.e-logo .mk::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--head)}
+.e-logo small{font-weight:500;color:var(--head-ink-2);font-size:12px}
+.e-search{position:relative;margin-left:8px}
+.e-search input{background:var(--head-2);border-color:transparent;color:var(--head-ink);width:220px;padding-left:28px}
+.e-search input::placeholder{color:var(--head-ink-2)}
+.e-search .ico{position:absolute;left:8px;top:6px;color:var(--head-ink-2)}
+.e-right{margin-left:auto;display:flex;align-items:center;gap:4px}
+.e-site{font-size:12px;color:var(--head-ink-2);padding:0 10px;border-right:1px solid var(--head-2);white-space:nowrap}
+.e-clock{font-size:12px;color:var(--head-ink);padding:0 10px;white-space:nowrap}
+.e-ibtn{position:relative;background:none;border:0;padding:7px;border-radius:5px;cursor:pointer;color:var(--head-ink)}
+.e-ibtn:hover,.e-ham:hover{background:var(--head-2)}
+.e-ibtn[aria-pressed="true"]{background:var(--head-2)}
+.e-ibtn .n{position:absolute;top:2px;right:1px;min-width:15px;height:15px;border-radius:8px;background:var(--hot);color:#fff;font-size:10px;font-weight:700;line-height:15px;text-align:center;padding:0 3px}
+.e-user{display:flex;align-items:center;gap:8px;padding:0 4px 0 10px;font-size:12px;white-space:nowrap}
+.e-user .av{width:26px;height:26px;border-radius:50%;background:var(--head-2);display:grid;place-items:center;font-weight:700}
+.e-demo{font-size:11px;font-weight:700;color:var(--head);background:var(--hot-soft);padding:1px 7px;border-radius:3px;margin-left:4px}
+
+/* 열린 화면 탭 */
+.e-mdi{display:flex;align-items:flex-end;gap:2px;padding:0 8px;background:var(--gridhead);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.e-mdi::-webkit-scrollbar{display:none}
+.e-tab{display:flex;align-items:center;gap:6px;height:28px;padding:0 6px 0 12px;border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;background:transparent;color:var(--ink-2);cursor:pointer;white-space:nowrap;font-size:12.5px}
+.e-tab[aria-selected="true"]{background:var(--work);color:var(--ink);font-weight:650;height:30px;margin-bottom:-1px;border-color:var(--line)}
+.e-tab .x{display:grid;place-items:center;width:18px;height:18px;border-radius:3px;border:0;background:none;padding:0;cursor:pointer;color:var(--ink-2)}
+.e-tab .x:hover{background:var(--line);color:var(--ink)}
+.e-tab.home{padding-right:12px}
+
+/* 본문 3단 */
+.e-main{display:grid;grid-template-columns:212px minmax(0,1fr) auto;min-height:0}
+.e-side{background:var(--surface);border-right:1px solid var(--line);overflow-y:auto;padding:8px 0 16px}
+.e-grp{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;padding:8px 14px;cursor:pointer;font-weight:650;text-align:left;color:var(--ink)}
+.e-grp .chev{margin-left:auto;transition:transform .15s}
+.e-grp[aria-expanded="false"] .chev{transform:rotate(-90deg)}
+.e-items{list-style:none;margin:0 0 4px;padding:0}
+.e-items[hidden]{display:none}
+.e-item{display:flex;width:100%;align-items:center;gap:8px;background:none;border:0;border-left:3px solid transparent;padding:6px 14px 6px 35px;cursor:pointer;text-align:left;color:var(--ink-2)}
+.e-item:hover{background:var(--gridhead);color:var(--ink)}
+.e-item[aria-current="page"]{background:var(--sel);color:var(--primary);font-weight:650;border-left-color:var(--primary)}
+.e-item .b{margin-left:auto;font-size:10.5px;font-weight:700;color:#fff;background:var(--danger);border-radius:8px;padding:0 6px;line-height:16px}
+.e-side .none{padding:8px 14px;color:var(--ink-2)}
+.e-content{overflow:auto;min-width:0;padding:12px 16px 20px}
+.e-hist{width:276px;border-left:1px solid var(--line);background:var(--surface);overflow-y:auto;padding:12px 14px}
+.e-hist[hidden]{display:none}
+.e-hist h2{font-size:13px;margin:0;display:flex;justify-content:space-between;align-items:center}
+.e-hist .sub{font-size:12px;color:var(--ink-2);margin:2px 0 8px;line-height:1.5}
+.feed{list-style:none;margin:0;padding:0}
+.feed li{border-top:1px solid var(--line);padding:8px 0;font-size:12px;line-height:1.55}
+.feed .t{color:var(--ink-2);font-size:11px}
+.feed .tt{font-weight:650;display:block;font-size:12.5px}
+.feed .ln{color:var(--ink-2)}
+.feed li.alert .tt{color:var(--hot)}
+.feed li.danger .tt{color:var(--danger)}
+.feed li.recv .tt{color:var(--ok)}
+.feed li.po .tt{color:var(--primary)}
+.feed li.fresh{animation:flash 1.2s ease-out}
+@keyframes flash{from{background:var(--hot-soft)}to{background:transparent}}
+.e-status{display:flex;align-items:center;font-size:11.5px;background:var(--surface);border-top:1px solid var(--line);color:var(--ink-2);padding:0 4px;overflow:hidden;white-space:nowrap}
+.e-status span{padding:0 10px;border-left:1px solid var(--line)}
+.e-status span:first-child{border-left:0}
+.e-status .on::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px}
+.e-status .r{margin-left:auto}
+
+/* 화면 공통 */
+.s-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.s-crumb{font-size:11.5px;color:var(--ink-2)}
+.s-title{display:flex;align-items:baseline;gap:8px}
+.s-title h2{font-size:17px;font-weight:750;margin:0;letter-spacing:-.02em}
+.s-title .sid{font-size:11.5px;color:var(--ink-2)}
+.s-title .fav{background:none;border:0;padding:0;cursor:default;color:var(--hot)}
+.tb{display:flex;gap:4px;flex-wrap:wrap}
+.tbtn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1px solid var(--line);background:var(--surface);border-radius:4px;cursor:pointer;font-size:12.5px;white-space:nowrap}
+.tbtn:hover{border-color:var(--ink-2)}
+.tbtn.pri{background:var(--primary);border-color:var(--primary);color:var(--primary-ink);font-weight:650}
+.tbtn.pri:hover{filter:brightness(1.08)}
+.tbtn:disabled{opacity:.45;cursor:not-allowed}
+.tbtn .ico{width:14px;height:14px}
+.cond{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 12px;margin-bottom:10px}
+.cond label.k{color:var(--ink-2);font-size:12px;margin-right:6px}
+.cond .f{display:flex;align-items:center}
+.cond .req::after{content:"*";color:var(--danger);margin-left:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{border:0;background:var(--surface);height:26px;padding:0 10px;cursor:pointer;border-left:1px solid var(--line);font-size:12.5px}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--primary);color:var(--primary-ink);font-weight:650}
+.chk{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+
+.box{background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.box+.box,.box+.cols,.cols+.box,.cols+.cols{margin-top:10px}
+.cols>.box+.box{margin-top:0}
+.box-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);min-height:38px}
+.box-h h3{margin:0;font-size:13px;font-weight:700}
+.box-h .cnt{font-size:12px;color:var(--ink-2);font-weight:400;margin-left:6px}
+.box-h .side{font-size:12px;color:var(--ink-2)}
+.box-b{padding:12px}
+.cols{display:grid;gap:10px}
+.c2{grid-template-columns:1fr 1fr}
+.c32{grid-template-columns:3fr 2fr}
+.c23{grid-template-columns:2fr 3fr}
+.c4{grid-template-columns:repeat(4,1fr)}
+
+.dgw{overflow:auto}
+table.dg{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+.dg th{position:sticky;top:0;z-index:1;background:var(--gridhead);color:var(--ink-2);font-weight:650;text-align:left;padding:0 8px;height:30px;border-bottom:1px solid var(--line);border-right:1px solid color-mix(in srgb,var(--line) 60%,transparent);white-space:nowrap}
+.dg td{padding:0 8px;height:31px;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);white-space:nowrap;background:var(--surface)}
+.dg tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--gridhead) 55%,var(--surface))}
+.dg tbody tr:hover td{background:var(--sel)}
+.dg tr.sel td{background:var(--sel);box-shadow:inset 0 0 0 0 var(--primary)}
+.dg tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--primary)}
+.dg tr.click{cursor:pointer}
+.dg .rn{color:var(--ink-2);text-align:center;width:38px}
+.dg .r{text-align:right}
+.dg .c{text-align:center}
+.dg tfoot td{position:sticky;bottom:0;background:var(--gridhead);font-weight:700;border-top:1px solid var(--line);border-bottom:0}
+.dg .empty{text-align:center;color:var(--ink-2);height:80px;white-space:normal}
+.dg input.qin{width:84px;text-align:right;height:24px}
+
+.st{display:inline-block;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:3px;white-space:nowrap}
+.st.ok{background:var(--ok-soft);color:var(--ok)}
+.st.warn{background:var(--hot-soft);color:var(--hot)}
+.st.bad{background:var(--danger-soft);color:var(--danger)}
+.st.blue{background:var(--primary-soft);color:var(--primary)}
+.st.mute{background:var(--surface-2);color:var(--ink-2)}
+.tg{display:inline-block;font-size:10.5px;font-weight:750;padding:0 6px;border-radius:3px;margin-left:5px;vertical-align:1px;letter-spacing:.02em}
+.tg.ice{background:var(--ice-soft);color:var(--ice)}
+.tg.hot{background:var(--hot-soft);color:var(--hot)}
+.gauge{position:relative;height:8px;background:var(--surface-2);border-radius:4px;min-width:110px}
+.gauge .fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.gauge .rop{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.bar1{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;min-width:70px}
+.bar1 i{display:block;height:100%}
+.short{color:var(--danger);font-weight:700}
+.okc{color:var(--ok)}
+.muted{color:var(--ink-2)}
+.hint{font-size:12px;color:var(--ink-2);margin:8px 0 0}
+
+.kpi{padding:12px 14px}
+.kpi .k{font-size:12px;color:var(--ink-2);display:flex;justify-content:space-between}
+.kpi .v{font-size:22px;font-weight:780;letter-spacing:-.03em;line-height:1.35}
+.kpi .s{font-size:11.5px;color:var(--ink-2)}
+.kpi .k .st{font-size:10.5px}
+.todo{list-style:none;margin:0;padding:0}
+.todo li{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--line)}
+.todo li:first-child{border-top:0}
+.todo .grow{flex:1;min-width:0}
+.todo .grow small{display:block;color:var(--ink-2);font-size:11.5px}
+.guide{counter-reset:g;list-style:none;margin:0;padding:0}
+.guide li{counter-increment:g;display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--line)}
+.guide li:first-child{border-top:0}
+.guide li::before{content:counter(g);width:20px;height:20px;border-radius:50%;background:var(--primary-soft);color:var(--primary);font-weight:800;font-size:11px;display:grid;place-items:center;flex:none}
+.guide li.done::before{content:"✓";background:var(--ok-soft);color:var(--ok)}
+.guide .grow{flex:1}
+.guide small{display:block;color:var(--ink-2);font-size:11.5px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--ink-2);margin-top:4px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.split{display:flex;height:24px;border-radius:4px;overflow:hidden;font-size:12px;font-weight:700}
+.split div{display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.split .h{background:var(--hot-soft);color:var(--hot)}
+.split .i{background:var(--ice-soft);color:var(--ice);justify-content:flex-end}
+.contrib{display:grid;grid-template-columns:104px 1fr 48px;gap:6px 10px;align-items:center;font-size:12.5px}
+.contrib .bar{position:relative;height:12px}
+.contrib .bar i{position:absolute;top:0;bottom:0;border-radius:2px}
+.contrib .axis{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--ink-2)}
+.big{font-size:38px;font-weight:820;letter-spacing:-.04em;line-height:1.1}
+.calc{font-size:12.5px;line-height:2}
+.calc .eq{font-weight:700}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.mbtn{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px;cursor:pointer}
+.mbtn:hover{border-color:var(--ink-2);background:var(--gridhead)}
+.mbtn:active{transform:translateY(1px)}
+.mbtn b{display:block;font-size:13.5px}
+.mbtn span{font-size:12px;color:var(--ink-2)}
+.mbtn.ice{box-shadow:inset 3px 0 0 var(--ice)}
+.mbtn.hot{box-shadow:inset 3px 0 0 var(--hot)}
+.heat td.hc{text-align:center;font-weight:700;min-width:30px;padding:0 4px}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font-size:12.5px}
+.dl dt{color:var(--ink-2)}
+.dl dd{margin:0}
+.weather{display:flex;align-items:center;gap:14px}
+.weather .tmp{font-size:30px;font-weight:800;letter-spacing:-.03em}
+
+.toast{position:absolute;right:16px;bottom:40px;z-index:30;background:var(--head);color:var(--head-ink);padding:9px 14px;border-radius:6px;font-size:12.5px;box-shadow:0 8px 24px -8px rgba(0,0,0,.4);opacity:0;transform:translateY(6px);transition:opacity .2s,transform .2s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+dialog.dlg{border:1px solid var(--line);border-radius:8px;padding:0;width:min(420px,92vw);background:var(--surface);color:var(--ink);font-size:13px}
+dialog.dlg::backdrop{background:rgba(20,24,30,.45)}
+.dlg .box-h{background:var(--gridhead)}
+.dlg form{padding:14px;display:grid;gap:10px}
+.dlg .row{display:grid;grid-template-columns:90px 1fr;align-items:center;gap:8px}
+.dlg .row label{color:var(--ink-2)}
+.dlg .row input,.dlg .row select{width:100%}
+.dlg .act{display:flex;justify-content:flex-end;gap:6px;margin-top:4px}
+.e-scrim{display:none}
+
+@media (prefers-reduced-motion:reduce){.feed li.fresh{animation:none}.toast{transition:none}.e-grp .chev{transition:none}}
+@media (max-width:1180px){.e-hist{position:absolute;right:0;top:82px;bottom:26px;z-index:12;box-shadow:-12px 0 24px -16px rgba(0,0,0,.35)}}
+@media (max-width:900px){
+  .erp{height:780px}
+  .e-ham{display:block}
+  .e-search,.e-site,.e-user span:not(.av){display:none}
+  .e-main{grid-template-columns:minmax(0,1fr)}
+  .e-side{position:absolute;left:0;top:82px;bottom:26px;width:236px;z-index:14;transform:translateX(-102%);transition:transform .2s;box-shadow:12px 0 24px -16px rgba(0,0,0,.35)}
+  .e-side.open{transform:none}
+  .e-scrim.on{display:block;position:absolute;inset:82px 0 26px;background:rgba(20,24,30,.3);z-index:13}
+  .c2,.c32,.c23{grid-template-columns:1fr}
+  .c4{grid-template-columns:1fr 1fr}
+  .e-status span:nth-child(n+3):not(.r){display:none}
+  .intro .how{text-align:left}
+}
+@media (max-width:480px){.e-content{padding:10px}.kpi .v{font-size:19px}.e-clock{display:none}}
+
+/* 설계 문서: 메뉴 구조 */
+.tree{display:grid;grid-template-columns:repeat(4,1fr);gap:24px 28px;margin-top:28px}
+.tree div{border-top:1px solid var(--ink);padding-top:10px}
+.tree b{font-size:17px}
+.tree ul{list-style:none;margin:6px 0 0;padding:0;font-size:15px;color:var(--ink-2)}
+.tree li{padding:3px 0}
+.tree code{font-family:inherit;font-size:12px;color:var(--ink-2);margin-left:6px;opacity:.8}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:28px}
+.rules h4{margin:0 0 6px;font-size:16px}
+.rules p{margin:0;font-size:15px;color:var(--ink-2)}
+.sw{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sw span{font-size:12px;font-weight:700;padding:2px 8px;border-radius:3px}
+@media (max-width:820px){.tree{grid-template-columns:1fr 1fr}.rules{grid-template-columns:1fr}}
+
+/* 마무리 */
+.limits p{margin:0 0 1em}
+.limits b{display:block;margin-top:24px}
+footer{padding:40px 0 56px;font-size:14px;color:var(--ink-2)}
+
+@media (max-width:1000px){
+  .erd{grid-template-columns:repeat(3,1fr)}
+  ol.loop{grid-template-columns:repeat(4,1fr)}
+  ol.loop li:nth-child(4){border-right:0}
+  ol.loop li:nth-child(-n+4){border-bottom:1px solid var(--line)}
+}
+@media (max-width:820px){
+  .hero .wrap{grid-template-columns:1fr;gap:40px}
+  .problems{grid-template-columns:1fr}
+  .problems div,.problems div+div{padding:16px 0;border-right:0;border-bottom:1px solid var(--line)}
+  .erd{grid-template-columns:1fr 1fr}
+  ol.loop{grid-template-columns:1fr 1fr}
+  ol.loop li{border-right:0;border-bottom:1px solid var(--line)}
+  ol.loop li:nth-child(odd){border-right:1px solid var(--line)}
+  section.cs{padding:56px 0}
+  .hero{padding:48px 0}
+}
+@media (max-width:480px){
+  body{font-size:16px}
+  .wrap{padding:0 16px}
+  .topnav ul{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav" aria-label="섹션 이동">
+  <div class="wrap">
+    <a class="brand" href="#prototype">브루라인 ERP<small>카페 ERP 설계</small></a>
+    <ul>
+      <li><a class="nl" href="#prototype">프로토타입</a></li>
+      <li><a class="nl" href="#overview">개요</a></li>
+      <li><a class="nl" href="#problem">문제</a></li>
+      <li><a class="nl" href="#process">프로세스</a></li>
+      <li><a class="nl" href="#structure">화면과 데이터</a></li>
+      <li><a class="nl" href="#logic">예측 로직</a></li>
+      <li><a class="nl" href="#limits">한계와 회고</a></li>
+      <li><a class="nl" href="../">포트폴리오 홈</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="intro" id="prototype">
+  <div class="wrap">
+    <div>
+      <h1>브루라인 ERP</h1>
+      <p>오피스 상권 카페의 판매, 재고, 구매, 원가, 수요 예측을 하나로 잇는 ERP 프로토타입입니다. 메뉴를 눌러 직접 써보세요.</p>
+    </div>
+    <p class="how">모든 수치는 가상 데이터이며 새로고침하면 초기화됩니다.<br><a href="#overview">설계 문서 읽기</a></p>
+  </div>
+</header>
+
+<div class="shell">
+<div class="erp" id="erp" aria-label="브루라인 ERP 프로토타입">
+  <div class="e-top">
+    <button class="e-ham" id="hamBtn" aria-label="업무 메뉴 열기" aria-expanded="false" aria-controls="side"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <div class="e-logo"><span class="mk" aria-hidden="true"></span>BREWLINE<small>ERP</small></div>
+    <div class="e-search"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><input id="menuQ" type="search" placeholder="메뉴 검색 (예: 발주)" aria-label="메뉴 검색"></div>
+    <div class="e-right">
+      <span class="e-site">모닝톤 커피 본점</span>
+      <span class="e-clock num" id="eClock"></span>
+      <button class="e-ibtn" id="histBtn" aria-label="처리 이력 보기" aria-pressed="true" aria-controls="hist"><svg class="ico" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 004 0"/></svg><span class="n" id="histN" hidden></span></button>
+      <div class="e-user"><span class="av" aria-hidden="true">점</span><span>점장 (데모 계정)</span><span class="e-demo">가상 데이터</span></div>
+    </div>
+  </div>
+  <div class="e-mdi" id="mdi" role="tablist" aria-label="열린 화면"></div>
+  <div class="e-main">
+    <nav class="e-side" id="side" aria-label="업무 메뉴"></nav>
+    <div class="e-content" id="content" role="tabpanel" tabindex="-1"></div>
+    <aside class="e-hist" id="hist" aria-label="처리 이력">
+      <h2>처리 이력 <button class="tbtn" id="histClose" style="height:22px;padding:0 6px" aria-label="처리 이력 닫기"><svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h2>
+      <p class="sub">판매, 재고, 구매가 서로 어떻게 반영되는지 시간순으로 기록됩니다.</p>
+      <ul class="feed" id="feed" aria-live="polite"></ul>
+    </aside>
+  </div>
+  <div class="e-status" id="status"></div>
+  <div class="e-scrim" id="scrim"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog class="dlg" id="poDlg" aria-labelledby="poDlgT">
+    <div class="box-h"><h3 id="poDlgT">신규 발주 등록</h3></div>
+    <form method="dialog" id="poForm">
+      <div class="row"><label for="dIng">품목</label><select id="dIng"></select></div>
+      <div class="row"><label for="dQty">수량</label><input id="dQty" type="number" min="1" step="1"></div>
+      <div class="row"><label>거래처</label><span id="dSup" class="muted"></span></div>
+      <div class="row"><label>제안 수량</label><span id="dSug" class="muted"></span></div>
+      <div class="act"><button class="tbtn" value="cancel" formnovalidate>취소</button><button class="tbtn pri" value="ok" id="dOk">발주 등록</button></div>
+    </form>
+  </dialog>
+</div>
+</div>
+
+<main>
+<section class="hero" id="overview">
+  <div class="wrap">
+    <div>
+      <h2 class="h1">한 잔이 팔리면,<br>가게 전체가 움직이도록</h2>
+      <p class="lead">브루라인 ERP는 오피스 상권 카페 한 곳의 판매, 재고, 발주, 원가를 하나의 데이터로 잇고, 날씨와 요일로 오늘 올 손님 수를 예측하는 경량 ERP 설계입니다.</p>
+      <dl class="meta">
+        <dt>역할</dt><dd>기획, 프로세스 설계, 화면 설계, 프로토타입 구현</dd>
+        <dt>출발점</dt><dd>산업경영공학과 ERP 수업의 커피 프로세스 과제</dd>
+        <dt>데이터</dt><dd>카페 설정부터 수치까지 모두 가상 데이터</dd>
+      </dl>
+      <div class="cta">
+        <a class="btn" href="#prototype">프로토타입으로 돌아가기</a>
+        <a class="btn ghost" href="#problem">설계 과정 읽기</a>
+      </div>
+    </div>
+
+    <figure class="chain" aria-label="아이스 카페라떼 한 잔 판매가 재고 차감과 발주 제안으로 이어지는 예시" style="margin:0">
+      <div class="receipt seq s1">
+        <div class="rh"><span>주문 0412</span><span class="num">14:02</span></div>
+        <div class="ri"><span>카페라떼<span class="tag ice">ICE</span></span><span class="num">4,500원</span></div>
+      </div>
+      <div class="stem seq s2" aria-hidden="true"></div>
+      <div class="chips">
+        <span class="chip key seq s3">우유 <b class="num">−200ml</b></span>
+        <span class="chip seq s4">원두 <b class="num">−18g</b></span>
+        <span class="chip seq s5">얼음 <b class="num">−150g</b></span>
+        <span class="chip seq s6">아이스컵 <b class="num">−1</b></span>
+        <span class="chip seq s7">뚜껑 <b class="num">−1</b></span>
+        <span class="chip seq s8">빨대 <b class="num">−1</b></span>
+      </div>
+      <div class="stem seq s9" aria-hidden="true"></div>
+      <div class="result seq s9">
+        <strong>우유 발주 제안이 만들어졌어요</strong>
+        남은 우유가 재주문점 아래로 내려가, 내일 아침 도착분 발주가 사장님 승인 대기로 올라갑니다.
+      </div>
+      <figcaption class="caption">레시피(BOM)에 따라 판매 1건이 재고와 발주까지 이어지는 장면</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="cs" id="problem">
+  <div class="wrap">
+    <div class="prose">
+      <h2>사장님의 감이 유일한 시스템일 때</h2>
+      <p>대상은 가상의 카페 ‘모닝톤 커피’입니다. 오피스 빌딩 1층에 있고, 평일 하루 손님은 300명 안팎, 사장 1명과 파트타이머 1~2명이 운영합니다. 출근 시간과 점심 직후에 손님이 몰리고, 주말에는 평일의 3분의 1 이하로 줄어드는 오피스 상권의 전형적인 리듬으로 설정했습니다.</p>
+      <p>이런 가게에서 반복되는 문제는 세 가지로 정리했습니다.</p>
+    </div>
+    <div class="problems">
+      <div><h3>발주가 기억에 의존한다</h3><p>원두와 컵이 떨어지기 직전에야 주문하고, 도착까지 며칠 걸리는 품목은 한 번씩 품절이 납니다.</p></div>
+      <div><h3>우유는 늘 많거나 모자란다</h3><p>유통기한이 짧아 넉넉히 사면 버리게 되고, 아껴 사면 점심 피크에 바닥납니다.</p></div>
+      <div><h3>매출과 재고가 따로 논다</h3><p>POS에는 매출만, 엑셀에는 재고만 있어서 “라떼가 많이 팔려 우유가 줄었다”는 연결을 사람이 직접 해야 합니다.</p></div>
+    </div>
+    <p class="note">위 상황은 이 프로젝트를 위해 설정한 가상 시나리오이며, 실제 매장 조사 결과가 아닙니다.</p>
+    <div class="prose">
+      <h3>여기에 날씨를 더한 이유</h3>
+      <p>날씨는 손님 수보다 손님이 고르는 음료를 더 크게 바꿀 수 있습니다. 미국의 한 대학 카페 데이터를 다룬 교육 자료에서는 기온이 오를수록 커피는 덜 팔리고 탄산음료가 더 팔렸지만 전체 판매량은 크게 변하지 않아, 같은 손님이 따뜻한 음료에서 차가운 음료로 옮겨간 것으로 해석했습니다. 아이스 비율이 바뀌면 얼음과 아이스컵, 우유 사용량이 함께 바뀌기 때문에, 예측은 결국 재고와 발주 문제로 이어집니다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="cs" id="process">
+  <div class="wrap">
+    <div class="prose">
+      <h2>흩어진 세 개의 기록을 하나의 고리로</h2>
+      <p>지금은 매출, 재고, 발주가 각자 다른 곳에 기록되고 서로 연결되지 않습니다.</p>
+    </div>
+    <div class="asis" aria-label="기존 프로세스">
+      <div class="box"><b>POS</b><span>매출과 주문 내역</span></div>
+      <span class="gap">연결 없음</span>
+      <div class="box"><b>엑셀 재고표</b><span>마감 후 손으로 세서 입력</span></div>
+      <span class="gap">연결 없음</span>
+      <div class="box"><b>사장님 메모</b><span>“원두 주문해야 함”</span></div>
+    </div>
+    <div class="prose" style="margin-top:40px">
+      <p>개선안은 이 기록들을 하나의 데이터베이스에 두고, 한 단계의 결과가 다음 단계의 입력이 되도록 순서를 설계했습니다. 색으로 표시한 4~5단계가 사람의 손을 가장 많이 덜어주는 구간입니다.</p>
+    </div>
+    <ol class="loop">
+      <li><b>예측</b>날씨와 요일로 오늘 손님 수와 메뉴별 수요 계산</li>
+      <li><b>준비</b>필요한 우유, 얼음, 원두 양과 근무 인원 제안</li>
+      <li><b>판매</b>POS 주문 1건 기록</li>
+      <li class="hl"><b>차감</b>레시피대로 재료 자동 차감, 우유는 유통기한 빠른 것부터</li>
+      <li class="hl"><b>감지</b>재주문점 아래로 내려간 품목을 발주 제안으로 생성</li>
+      <li><b>발주와 입고</b>제안 승인, 입고 검수 후 재고 반영</li>
+      <li><b>학습</b>실제 판매량이 다음 예측의 입력값이 됨</li>
+    </ol>
+    <p class="loopback">7단계에서 쌓인 실제 판매량은 다시 1단계 예측 모델의 ‘지난주 같은 요일 손님 수’로 들어갑니다.</p>
+  </div>
+</section>
+
+<section class="cs" id="structure">
+  <div class="wrap">
+    <div class="prose">
+      <h2>7개 업무 메뉴, 14개 화면</h2>
+      <p>처음 설계한 8개 모듈을 실제 ERP의 메뉴 체계로 다시 묶었습니다. 판매 등록, 재고 현황처럼 매일 쓰는 화면 옆에 재고 수불부, 입고 처리, 거래처와 품목 마스터처럼 ERP라면 기본으로 갖추는 화면을 더했습니다. 모든 화면에는 업무 영역 약자와 번호로 된 화면 ID를 붙여, 운영 문의나 권한 설정 때 화면을 정확히 가리킬 수 있게 했습니다.</p>
+    </div>
+    <div class="tree">
+      <div><b>홈</b><ul><li>대시보드<code>HOM-0001</code></li></ul></div>
+      <div><b>영업관리</b><ul><li>판매 등록<code>SAL-0101</code></li><li>판매 현황<code>SAL-0201</code></li></ul></div>
+      <div><b>재고관리</b><ul><li>재고 현황<code>INV-0101</code></li><li>재고 수불부<code>INV-0201</code></li><li>유통기한 관리<code>INV-0301</code></li></ul></div>
+      <div><b>구매관리</b><ul><li>발주 관리<code>PUR-0101</code></li><li>입고 처리<code>PUR-0201</code></li><li>거래처 관리<code>PUR-0301</code></li></ul></div>
+      <div><b>레시피와 원가</b><ul><li>BOM 관리<code>PRD-0101</code></li><li>원가 분석<code>PRD-0201</code></li></ul></div>
+      <div><b>수요예측</b><ul><li>AI 수요 예측<code>FCS-0101</code></li><li>근무 스케줄<code>FCS-0201</code></li></ul></div>
+      <div><b>기준정보</b><ul><li>품목 마스터<code>MST-0101</code></li></ul></div>
+    </div>
+
+    <div class="prose" style="margin-top:56px">
+      <h3>화면 공통 규칙</h3>
+    </div>
+    <div class="rules">
+      <div><h4>같은 순서로 읽히게</h4><p>모든 업무 화면은 경로와 화면 ID, 툴바, 조회조건, 데이터 그리드, 합계 행 순서로 배치했습니다. 화면이 바뀌어도 눈이 가는 위치가 같아서 처음 쓰는 직원도 빨리 익힙니다.</p></div>
+      <div><h4>여러 화면을 동시에</h4><p>메뉴를 열 때마다 상단에 탭이 쌓입니다. 발주를 승인하다가 재고 현황을 확인하고 다시 돌아오는 ERP 사용 패턴을 그대로 지원합니다.</p></div>
+      <div><h4>색은 의미에만</h4><p>색은 장식에 쓰지 않고 상태와 온도에만 썼습니다.</p>
+        <div class="sw"><span class="st ok">정상</span><span class="st warn">발주 필요</span><span class="st bad">품절 위험</span><span class="st blue">진행 중</span><span class="tg hot" style="margin:0">HOT</span><span class="tg ice" style="margin:0">ICE</span></div></div>
+    </div>
+
+    <div class="prose" style="margin-top:56px">
+      <h3>판매가 재고를 움직이는 데이터 경로</h3>
+      <p>테이블은 10개로 나눴습니다. 핵심은 굵은 테두리로 표시한 경로입니다. 주문상세 한 줄이 레시피를 거쳐 재고 이동 기록으로 바뀌고, 우유처럼 유통기한이 있는 재료는 입고 묶음에서 먼저 들어온 것부터 빠집니다. 프로토타입의 재고 수불부 화면이 바로 이 재고 이동 테이블을 보여줍니다.</p>
+    </div>
+    <div class="erd">
+      <div class="ent"><b>메뉴</b><code>menu</code><ul><li>메뉴명, 온도</li><li>판매가</li></ul></div>
+      <div class="ent path"><b>레시피</b><code>recipe</code><ul><li>메뉴 ID</li><li>재료 ID, 사용량</li></ul></div>
+      <div class="ent"><b>재료</b><code>ingredient</code><ul><li>단위, 단가</li><li>리드타임, 포장 단위</li></ul></div>
+      <div class="ent"><b>입고 묶음</b><code>stock_lot</code><ul><li>재료 ID, 수량</li><li>유통기한</li></ul></div>
+      <div class="ent path"><b>재고 이동</b><code>stock_tx</code><ul><li>재료 ID, 증감량</li><li>사유(판매, 입고, 폐기)</li></ul></div>
+      <div class="ent"><b>주문</b><code>sales_order</code><ul><li>주문 시각</li><li>결제 금액</li></ul></div>
+      <div class="ent path"><b>주문상세</b><code>sales_item</code><ul><li>주문 ID, 메뉴 ID</li><li>수량</li></ul></div>
+      <div class="ent"><b>거래처와 발주</b><code>supplier, purchase_order</code><ul><li>품목, 수량</li><li>상태(제안, 발주, 입고)</li></ul></div>
+      <div class="ent"><b>일별 날씨</b><code>weather_daily</code><ul><li>최고기온, 강수</li><li>미세먼지 등급</li></ul></div>
+      <div class="ent"><b>예측 결과</b><code>forecast</code><ul><li>예상 손님, 구간</li><li>실제값(검증용)</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="cs" id="logic">
+  <div class="wrap">
+    <div class="prose">
+      <h2>단순하지만 설명할 수 있는 예측</h2>
+      <p>예측 모델은 딥러닝 대신 다중회귀로 정했습니다. 2025년 한 연구는 날씨와 판매 데이터로 여러 모델을 비교했는데, SARIMA나 LSTM보다 OLS와 포아송 회귀 같은 회귀 모델이 더 좋은 결과를 냈고, 기온과 습도는 판매량과 중간 정도의 상관을 보였지만 날씨만 단독으로 쓰면 예측 기여가 제한적이었다고 보고했습니다. 그래서 날씨 외에 요일, 공휴일, 지난주 같은 요일의 실적을 함께 넣었습니다. 사장님에게 “왜 오늘 280명인가”를 숫자 하나하나로 보여줄 수 있다는 점도 회귀를 고른 이유입니다.</p>
+    </div>
+    <div class="formula">
+      <div class="f">예상 손님 = β₀ + β₁·지난주 같은 요일 + β₂·(최고기온 − 20) + β₃·비 + β₄·미세먼지 나쁨</div>
+      <div class="tbl-wrap" style="margin-top:14px">
+        <table class="num">
+          <thead><tr><th>계수</th><th>의미</th><th class="r">값 (가상)</th></tr></thead>
+          <tbody>
+            <tr><td>β₀</td><td>기본값</td><td class="r">18</td></tr>
+            <tr><td>β₁</td><td>지난주 같은 요일 손님 1명당</td><td class="r">0.88</td></tr>
+            <tr><td>β₂</td><td>20℃보다 1℃ 높을 때마다</td><td class="r">+0.9명</td></tr>
+            <tr><td>β₃</td><td>비 오는 날</td><td class="r">−24명</td></tr>
+            <tr><td>β₄</td><td>미세먼지 나쁨 이상</td><td class="r">−16명</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin:8px 0 0">공휴일에는 ‘지난주 같은 요일’ 대신 주말 평균을 넣습니다. 계수는 프로토타입 시연을 위한 가상값이고, 실제 도입 시 매장 데이터로 다시 추정해야 합니다.</p>
+    </div>
+    <div class="prose">
+      <p>미세먼지를 변수로 넣은 데는 국내 연구도 참고했습니다. 세탁 서비스 매출을 분석한 연구에서는 기온이 아니라 강수량과 미세먼지, 초미세먼지가 매출에 통계적으로 유의한 영향을 줬습니다. 업종마다 영향을 주는 날씨 요소가 다르다는 뜻이라, 카페에서도 기온 하나만 보지 않도록 설계했습니다.</p>
+
+      <h3>핫과 아이스 비율</h3>
+      <p>손님 수와 별도로, 최고기온에 따라 아이스 음료 비율을 S자 곡선으로 계산합니다. 14℃에서 절반이 되도록 두고, 한국은 한겨울에도 아이스 수요가 꾸준하다는 점을 반영해 최저 35%, 최고 95%로 제한했습니다. 스타벅스코리아가 2023년에 공개한 자료에서도 매출 기준 1위 메뉴가 아이스 아메리카노였습니다. 이 비율이 얼음, 아이스컵, 빨대의 예상 사용량을 바꿉니다.</p>
+
+      <h3>재주문점과 안전재고</h3>
+      <p>“언제 주문해야 품절이 나지 않는가”는 생산운영관리에서 다루는 표준 재고 모형으로 계산했습니다.</p>
+    </div>
+    <div class="formula">
+      <div class="f">안전재고 = z × σ × √L</div>
+      <div class="f" style="margin-top:6px">재주문점 = 하루 평균 사용량 × L + 안전재고</div>
+      <p class="note" style="margin:10px 0 0">z는 품절을 피하고 싶은 확률(서비스 수준 95%면 1.65), σ는 하루 사용량의 표준편차, L은 주문 후 도착까지 걸리는 일수입니다. 프로토타입에서는 σ를 하루 평균 사용량의 18%로 가정했습니다.</p>
+    </div>
+    <div class="prose">
+      <p>발주량은 “목표 재고 − 현재고”를 포장 단위로 올림해 정합니다. 목표 재고는 리드타임에 다음 발주까지의 3일을 더한 기간의 사용량과 안전재고를 합친 값입니다.</p>
+
+      <h3>실제 날씨를 연결한다면</h3>
+      <p>기상청이 공공데이터포털에 제공하는 단기예보 조회서비스를 쓰는 구조로 설계했습니다. 무료이고 개발 계정은 10,000건까지 자동 승인되며, 위치는 위경도가 아니라 기상청 격자 좌표(nx, ny)로 요청합니다. 인증키를 웹페이지에 그대로 넣으면 누구나 볼 수 있으므로, 실제 운영에서는 작은 서버가 하루 몇 번 예보를 받아 저장하고 화면은 그 결과만 읽게 합니다. 이 프로토타입은 키 노출을 피하기 위해 날씨를 시나리오로 직접 고르는 방식입니다.</p>
+
+      <h3>근거 자료</h3>
+    </div>
+    <ol class="refs prose">
+      <li>Penn State STAT 200, <a href="https://online.stat.psu.edu/stat200/sites/stat200_fa21/files/cafedata_documentation.txt" target="_blank" rel="noopener">Cafe data documentation</a>: 대학 카페 판매 데이터와 기온, 핫/콜드 음료 전환 해석</li>
+      <li><a href="https://ideas.repec.org/a/aac/ijirss/v8y2025i6p2883-2892id10223.html" target="_blank" rel="noopener">Data-driven forecasting of sales influenced by climate variability using deep learning</a>, IJIRSS 8(6), 2025: 회귀 모델과 시계열·딥러닝 모델 비교</li>
+      <li>Güler 외, <a href="https://dergipark.org.tr/tr/download/article-file/3784814" target="_blank" rel="noopener">Forecasting restaurant sales with the sensitivity of weather conditions and special days using Facebook Prophet</a>, Journal of Data Applications 2, 2023</li>
+      <li><a href="https://scholar.kyobobook.co.kr/article/detail/4010027794747" target="_blank" rel="noopener">기상요인이 세탁 서비스 매출에 미치는 영향</a>, 글로벌경영연구 32(1), 2020</li>
+      <li>Tiger Analytics, <a href="https://www.tigeranalytics.com/wp-content/uploads/2023/10/GCP-ML-based-forecast.pdf" target="_blank" rel="noopener">ML-based forecasting for a bakery-café</a>: 북미 2,000여 매장 체인의 날씨 포함 수요예측 사례</li>
+      <li>공공데이터포털, <a href="https://www.data.go.kr/data/15084084/openapi.do" target="_blank" rel="noopener">기상청 단기예보 조회서비스</a></li>
+      <li>이코노미스트, <a href="https://economist.co.kr/article/view/ecn202508050079" target="_blank" rel="noopener">한국은 왜 ‘아아’의 천국이 되었을까?</a>, 2025: 스타벅스코리아 2023년 메뉴별 매출 자료 인용</li>
+    </ol>
+  </div>
+</section>
+
+<section class="cs" id="limits">
+  <div class="wrap limits">
+    <div class="prose">
+      <h2>한계와 다음 단계</h2>
+      <b>계수는 가상값입니다</b>
+      <p>실제 도입이라면 POS 판매 기록과 일별 날씨를 8~12주 모은 뒤 회귀 계수를 추정하고, 마지막 몇 주는 학습에서 빼 두었다가 MAPE(평균 절대 백분율 오차)로 예측이 얼마나 빗나가는지 확인하겠습니다. 목표 오차는 운영자와 함께 정해야 할 값이라 이 설계에서 미리 정하지 않았습니다.</p>
+      <b>레시피와 실제 사용량은 다릅니다</b>
+      <p>바리스타마다 우유를 따르는 양이 조금씩 다르기 때문에, 이론 재고와 실제 재고 사이에 차이가 생깁니다. 주 1회 실사로 재고를 맞추고 그 차이를 로스로 기록해, 레시피 사용량을 보정하는 절차가 필요합니다.</p>
+      <b>POS 연동은 별도 협의가 필요합니다</b>
+      <p>판매 자동 차감은 POS사가 주문 데이터를 내보내는 API를 제공해야 가능합니다. 연동이 어려운 매장을 위해 마감 후 판매 수량을 한 번에 입력하는 방식도 함께 고려했습니다.</p>
+
+      <h2 style="margin-top:72px">돌아보며</h2>
+      <p>처음에는 회계, 인사, 고객 관리까지 화면을 늘리고 싶었지만, ERP의 핵심은 기능의 수보다 기능 사이의 연결이라는 점을 기준으로 범위를 줄였습니다. 판매 1건이 재고와 발주까지 이어지는 장면을 직접 눌러볼 수 있게 만든 것이 그 결정의 결과입니다.</p>
+      <p>AI 예측도 숫자 하나만 크게 보여주기보다, 그 숫자가 기본값, 지난주 실적, 기온, 비, 미세먼지에서 각각 얼마씩 나왔는지 막대로 쪼개 보여주는 쪽을 택했습니다. 사장님이 예측을 믿고 발주하려면, 결과보다 근거가 먼저 보여야 한다고 생각했기 때문입니다.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">기획, 설계, 구현 윤희경. 카페 설정과 모든 수치는 가상 데이터입니다.</div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>Array.from(el.querySelectorAll(s));
+
+/* ---------- 고정 난수 ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=mulberry32(20261109);
+function gauss(){let u=0,v=0;while(!u)u=R();while(!v)v=R();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+
+/* ---------- 기준 정보 ---------- */
+const DOW=['일','월','화','수','목','금','토'];
+const LAG=[72,298,312,318,305,276,88];
+const COEF={b0:18,lag:0.88,temp:0.9,rain:-24,pm:-16};
+const SIGMA=18, Z=1.65, DPC=1.15, CAP=45, REVIEW=3;
+const HOURS=[7,8,9,10,11,12,13,14,15,16,17,18,19];
+const HW_DAY={7:2,8:12,9:14,10:7,11:6,12:18,13:15,14:6,15:7,16:5,17:4,18:3,19:1};
+const HW_END={7:1,8:3,9:6,10:9,11:11,12:13,13:13,14:12,15:11,16:9,17:6,18:4,19:2};
+const NOW_H=14;
+
+const VENDORS=[
+ {id:'V-01',name:'로스터리 협력사',person:'박OO',tel:'02-0000-0101',lead:'2일',cut:'전일 15:00',pay:'월말 정산'},
+ {id:'V-02',name:'유제품 대리점',person:'이OO',tel:'02-0000-0102',lead:'1일',cut:'전일 18:00',pay:'주 단위 정산'},
+ {id:'V-03',name:'제빙 업체',person:'최OO',tel:'02-0000-0103',lead:'1일',cut:'전일 20:00',pay:'월말 정산'},
+ {id:'V-04',name:'카페 자재 도매',person:'정OO',tel:'02-0000-0104',lead:'2~3일',cut:'당일 12:00',pay:'카드 결제'}
+];
+const VG={};VENDORS.forEach(v=>VG[v.id]=v);
+const ING=[
+ {id:'bean',code:'RM-101',cat:'원재료',name:'원두',unit:'g',big:'kg',div:1000,cost:25,L:2,pack:1000,sup:'V-01',f:0.85},
+ {id:'milk',code:'RM-102',cat:'원재료',name:'우유',unit:'ml',big:'L',div:1000,cost:2.6,L:1,pack:1000,sup:'V-02',f:1.06},
+ {id:'ice',code:'RM-103',cat:'원재료',name:'얼음',unit:'g',big:'kg',div:1000,cost:0.8,L:1,pack:3000,sup:'V-03',f:1.5},
+ {id:'syrup',code:'RM-104',cat:'원재료',name:'바닐라 시럽',unit:'ml',big:'L',div:1000,cost:12,L:3,pack:1000,sup:'V-04',f:2.4},
+ {id:'choco',code:'RM-105',cat:'원재료',name:'초코 소스',unit:'g',big:'kg',div:1000,cost:15,L:3,pack:1000,sup:'V-04',f:2.0},
+ {id:'tea',code:'RM-106',cat:'원재료',name:'얼그레이 티백',unit:'개',big:'개',div:1,cost:300,L:3,pack:50,sup:'V-04',f:2.6},
+ {id:'hcup',code:'SM-201',cat:'부자재',name:'핫컵 12oz',unit:'개',big:'개',div:1,cost:60,L:2,pack:50,sup:'V-04',f:1.6},
+ {id:'icup',code:'SM-202',cat:'부자재',name:'아이스컵 16oz',unit:'개',big:'개',div:1,cost:80,L:2,pack:50,sup:'V-04',f:0.55},
+ {id:'lid',code:'SM-203',cat:'부자재',name:'뚜껑',unit:'개',big:'개',div:1,cost:40,L:2,pack:100,sup:'V-04',f:1.8},
+ {id:'straw',code:'SM-204',cat:'부자재',name:'빨대',unit:'개',big:'개',div:1,cost:10,L:2,pack:200,sup:'V-04',f:2.2},
+ {id:'holder',code:'SM-205',cat:'부자재',name:'컵 홀더',unit:'개',big:'개',div:1,cost:30,L:2,pack:100,sup:'V-04',f:1.3}
+];
+const IG={};ING.forEach(i=>IG[i.id]=i);
+const MENU=[
+ {id:'ame_h',code:'MN-001',name:'아메리카노',temp:'hot',price:3500,bom:{bean:18,hcup:1,lid:1,holder:1}},
+ {id:'ame_i',code:'MN-002',name:'아메리카노',temp:'ice',price:3800,bom:{bean:18,ice:180,icup:1,lid:1,straw:1}},
+ {id:'lat_h',code:'MN-003',name:'카페라떼',temp:'hot',price:4300,bom:{bean:18,milk:220,hcup:1,lid:1,holder:1}},
+ {id:'lat_i',code:'MN-004',name:'카페라떼',temp:'ice',price:4500,bom:{bean:18,milk:200,ice:150,icup:1,lid:1,straw:1}},
+ {id:'van_i',code:'MN-005',name:'바닐라라떼',temp:'ice',price:4900,bom:{bean:18,milk:200,ice:150,syrup:20,icup:1,lid:1,straw:1}},
+ {id:'cho_h',code:'MN-006',name:'초코라떼',temp:'hot',price:4800,bom:{choco:30,milk:220,hcup:1,lid:1,holder:1}},
+ {id:'tea_h',code:'MN-007',name:'얼그레이',temp:'hot',price:4000,bom:{tea:1,hcup:1,lid:1,holder:1}}
+];
+const MG={};MENU.forEach(m=>MG[m.id]=m);
+function menuMix(r){return{ame_h:.55*(1-r),ame_i:.55*r,lat_h:.20*(1-r),lat_i:.20*r,van_i:.09,cho_h:.07,tea_h:.09}}
+function iceRatio(t){return Math.min(.95,Math.max(.35,1/(1+Math.exp(-(t-14)/5))))}
+function mname(m){return m.name+(m.temp==='ice'?' 아이스':' 핫')}
+function ttag(m){return `<span class="tg ${m.temp}">${m.temp==='ice'?'ICE':'HOT'}</span>`}
+
+/* ---------- 예측 모델 ---------- */
+function predict(s){
+  const weekendLike=s.holiday||s.dow===0||s.dow===6;
+  const lag=s.holiday?Math.round((LAG[0]+LAG[6])/2):LAG[s.dow];
+  const parts=[
+    {k:'기본값',v:COEF.b0},{k:'지난주 같은 요일',v:COEF.lag*lag},{k:'최고기온',v:COEF.temp*(s.tmax-20)},
+    {k:'비',v:s.rain?COEF.rain:0},{k:'미세먼지 나쁨',v:s.pm?COEF.pm:0}];
+  const y=Math.max(15,Math.round(parts.reduce((a,p)=>a+p.v,0)));
+  const r=iceRatio(s.tmax),drinks=y*DPC,mix=menuMix(r);
+  const menu=MENU.map(m=>Object.assign({},m,{qty:drinks*mix[m.id]}));
+  const need={};ING.forEach(i=>need[i.id]=0);
+  menu.forEach(m=>{for(const k in m.bom)need[k]+=m.bom[k]*m.qty});
+  const hw=weekendLike?HW_END:HW_DAY;
+  const hourly=HOURS.map(h=>drinks*hw[h]/100);
+  const peak=Math.max(...hourly),peakH=HOURS[hourly.indexOf(peak)];
+  const staffH=hourly.map(c=>Math.max(1,Math.ceil(c/CAP)));
+  const staff=Math.max(...staffH);
+  const revenue=menu.reduce((a,m)=>a+m.qty*m.price,0);
+  return{y,lo:Math.max(0,Math.round(y-1.28*SIGMA)),hi:Math.round(y+1.28*SIGMA),r,drinks,menu,need,hourly,peak,peakH,staff,staffH,revenue,parts,lag,weekendLike};
+}
+
+/* ---------- 형식 ---------- */
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function md(d){return (d.getMonth()+1)+'/'+d.getDate()}
+function ymd(d){return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')}
+function won(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
+function int(n){return Math.round(n).toLocaleString('ko-KR')}
+function qty(i,v){v=Math.max(0,v);if(i.div>1&&v>=i.div)return (v/i.div).toFixed(1)+i.big;return int(v)+i.unit}
+function sq(i,v){return (v<0?'−':'+')+qty(i,Math.abs(v))}
+let clock=NOW_H*60;
+function hm(c){return String(Math.floor(c/60)).padStart(2,'0')+':'+String(c%60).padStart(2,'0')}
+function tick(){clock+=1;return hm(clock)}
+const YMD=String(TODAY.getFullYear()).slice(2)+String(TODAY.getMonth()+1).padStart(2,'0')+String(TODAY.getDate()).padStart(2,'0');
+
+/* ---------- 상태 ---------- */
+const S={
+  scn:{dow:TODAY.getDay(),tmax:14,rain:false,pm:false,holiday:false},preset:'clear',
+  today:{rev:0,cups:0,count:{},hourly:{}},hist:[],pos:[],waste:[],feed:[],tx:[],
+  open:['dash'],cur:'dash',exp:{},menuQ:'',unread:0,lastQuery:'14:00',
+  selIng:'milk',selMenu:'lat_i',poSeq:1,orderSeq:412,guide:{sell:false,po:false,fc:false},
+  f:{stockCat:'전체',stockSt:'전체',stockQ:'',ledIng:'all',ledType:'전체',poSt:'전체',salesView:'메뉴별'}
+};
+(function(){
+  const sum={};ING.forEach(i=>sum[i.id]=0);
+  for(let d=1;d<=5;d++){const p=predict({dow:d,tmax:18,rain:false,pm:false,holiday:false});ING.forEach(i=>sum[i.id]+=p.need[i.id])}
+  ING.forEach(i=>{i.d=sum[i.id]/5;i.sd=i.d*0.18;i.ss=Z*i.sd*Math.sqrt(i.L);i.rop=i.d*i.L+i.ss;i.stock=Math.round(i.f*i.rop)});
+  const m=IG.milk;
+  m.lots=[{no:'LOT-'+YMD.slice(0,4)+'03',qty:Math.round(m.stock*.3),exp:addDays(TODAY,1),recv:addDays(TODAY,-6)},
+          {no:'LOT-'+YMD.slice(0,4)+'07',qty:Math.round(m.stock*.45),exp:addDays(TODAY,3),recv:addDays(TODAY,-4)}];
+  m.lots.push({no:'LOT-'+YMD.slice(0,4)+'09',qty:m.stock-m.lots[0].qty-m.lots[1].qty,exp:addDays(TODAY,6),recv:addDays(TODAY,-1)});
+})();
+// 오늘 오후 2시까지 판매와 수불 기록
+(function(){
+  const p=predict(S.scn),mix=menuMix(p.r);
+  MENU.forEach(m=>S.today.count[m.id]=0);
+  HOURS.forEach((h,i)=>S.today.hourly[h]=h<NOW_H?Math.max(0,Math.round(p.hourly[i]*(1+gauss()*.1))):0);
+  const cups=HOURS.reduce((a,h)=>a+S.today.hourly[h],0);
+  MENU.forEach(m=>{const c=Math.round(cups*mix[m.id]);S.today.count[m.id]=c;S.today.rev+=c*m.price;S.today.cups+=c});
+  // 시간대별 출고량 (메뉴 비율 기준)
+  const perCup={};ING.forEach(i=>perCup[i.id]=0);
+  MENU.forEach(m=>{for(const k in m.bom)perCup[k]+=m.bom[k]*mix[m.id]});
+  const out={};ING.forEach(i=>out[i.id]=HOURS.filter(h=>h<NOW_H).map(h=>Math.round(S.today.hourly[h]*perCup[i.id])));
+  ING.forEach(i=>{
+    let bal=i.stock+out[i.id].reduce((a,b)=>a+b,0);
+    S.tx.push({t:'07:00',type:'기초재고',ing:i.id,q:bal,bal,ref:'일 마감 이월'});
+    HOURS.filter(h=>h<NOW_H).forEach((h,k)=>{const q=out[i.id][k];if(!q)return;bal-=q;
+      S.tx.push({t:String(h).padStart(2,'0')+':59',type:'판매출고',ing:i.id,q:-q,bal,ref:h+'시대 판매 집계'})});
+  });
+  S.tx.sort((a,b)=>a.t<b.t?1:a.t>b.t?-1:0);
+})();
+(function(){
+  for(let k=7;k>=1;k--){
+    const d=addDays(TODAY,-k);
+    const sc={dow:d.getDay(),tmax:Math.round(13+gauss()*5),rain:R()<.25,pm:R()<.15,holiday:false};
+    const p=predict(sc),y=Math.max(10,p.y+gauss()*SIGMA);
+    S.hist.push({d,sc,pred:p.y,act:Math.round(y),rev:p.revenue*(y/p.y)});
+  }
+})();
+
+/* ---------- 업무 처리 ---------- */
+function openPO(id){return S.pos.find(p=>p.ing===id&&p.status!=='입고완료')}
+function suggestQty(i){const t=i.d*(i.L+REVIEW)+i.ss;return Math.max(i.pack,Math.ceil((t-i.stock)/i.pack)*i.pack)}
+function needOrder(i){return i.stock<i.d*(i.L+REVIEW)+i.ss}
+function newPO(i,q,status,by){
+  const po={no:'PO-'+YMD+'-'+String(S.poSeq++).padStart(2,'0'),ing:i.id,qty:q,status,by,date:TODAY,due:addDays(TODAY,i.L)};
+  S.pos.unshift(po);return po;
+}
+function makeSuggestion(i,silent){
+  const po=newPO(i,suggestQty(i),'제안','시스템');
+  if(!silent)log(i.stock<=i.d*i.L?'danger':'alert',i.name+' 발주 제안 생성',['현재고 '+qty(i,i.stock)+', 재주문점 '+qty(i,i.rop),po.no+', '+qty(i,po.qty)+' ('+VG[i.sup].name+')']);
+  return po;
+}
+function log(kind,title,lines,time){
+  S.feed.unshift({kind,title,lines:lines||[],time:time||tick(),fresh:true});
+  if(S.feed.length>60)S.feed.pop();
+  if($('#hist').hidden)S.unread++;
+}
+function txAdd(type,i,q,ref){S.tx.unshift({t:hm(clock),type,ing:i.id,q,bal:i.stock,ref})}
+(function(){
+  S.feed.push({kind:'alert',title:'원두 발주 제안 생성',time:'08:12',lines:['출근 피크 이후 재주문점 아래로 내려감']});
+  S.feed.push({kind:'danger',title:'아이스컵 16oz 발주 제안 생성',time:'07:58',lines:['리드타임 동안 쓸 양보다 재고가 적음']});
+  S.feed.push({kind:'sale',title:'영업 시작',time:'07:00',lines:['오늘 예측 '+predict(S.scn).y+'명, 기초재고 이월']});
+  ING.forEach(i=>{if(i.stock<=i.rop)makeSuggestion(i,true)});
+  const st=newPO(IG.straw,400,'발주완료','점장');st.date=addDays(TODAY,-1);st.due=addDays(TODAY,1);
+})();
+function consume(i,q){
+  if(i.lots){i.lots.sort((a,b)=>a.exp-b.exp);let left=q;
+    for(const l of i.lots){const t=Math.min(l.qty,left);l.qty-=t;left-=t;if(left<=0)break}
+    i.lots=i.lots.filter(l=>l.qty>0);i.stock=i.lots.reduce((a,l)=>a+l.qty,0);
+  }else i.stock=Math.max(0,i.stock-q);
+}
+function sellBatch(ids,title,ref){
+  const before={};ING.forEach(i=>before[i.id]=i.stock);
+  const used={};tick();
+  ids.forEach(id=>{const m=MG[id];
+    for(const k in m.bom){used[k]=(used[k]||0)+Math.min(m.bom[k],IG[k].stock);consume(IG[k],m.bom[k])}
+    S.today.count[id]++;S.today.rev+=m.price;S.today.cups++;S.today.hourly[NOW_H]++;});
+  Object.keys(used).forEach(k=>txAdd('판매출고',IG[k],-used[k],ref));
+  log('sale',title,Object.keys(used).map(k=>IG[k].name+' '+sq(IG[k],-used[k])),hm(clock));
+  ING.forEach(i=>{
+    if(before[i.id]>i.rop&&i.stock<=i.rop&&!openPO(i.id))makeSuggestion(i);
+    if(before[i.id]>0&&i.stock<=0)log('danger',i.name+' 품절',['관련 메뉴 판매를 중지하세요']);
+  });
+  S.guide.sell=true;render();
+}
+function sell(id){const m=MG[id],no='OR-'+String(S.orderSeq++).padStart(4,'0');sellBatch([id],no+': '+mname(m)+' 1잔',no);toast(mname(m)+' 1잔 판매를 등록했습니다.')}
+function rushPeak(){
+  const mix=menuMix(predict(S.scn).r),ids=[],cum=[];let acc=0;
+  MENU.forEach(m=>{acc+=mix[m.id];cum.push([acc,m.id])});
+  for(let n=0;n<30;n++){const x=R()*acc;ids.push(cum.find(c=>x<=c[0])[1])}
+  const a=String(S.orderSeq).padStart(4,'0');S.orderSeq+=30;
+  sellBatch(ids,'점심 피크 30잔 일괄 등록','OR-'+a+' 외 29건');toast('30잔을 등록하고 재료를 차감했습니다.');
+}
+function placePO(nos){
+  nos.forEach(no=>{const p=S.pos.find(x=>x.no===no);if(!p||p.status!=='제안')return;p.status='발주완료';p.by='점장';
+    const i=IG[p.ing];log('po',p.no+' 발주 확정',[i.name+' '+qty(i,p.qty)+', '+VG[i.sup].name+' (가상 전송)','입고 예정 '+ymd(p.due)])});
+  S.guide.po=true;toast(nos.length+'건 발주를 확정했습니다.');render();
+}
+function receivePO(no,q){
+  const p=S.pos.find(x=>x.no===no),i=IG[p.ing];q=Math.max(0,Math.round(q));
+  p.status='입고완료';p.recvQty=q;tick();
+  if(i.lots){i.lots.push({no:'LOT-'+YMD.slice(2)+String(S.poSeq).padStart(2,'0'),qty:q,exp:addDays(TODAY,7),recv:TODAY});i.stock=i.lots.reduce((a,l)=>a+l.qty,0)}
+  else i.stock+=q;
+  txAdd('구매입고',i,q,p.no);
+  log('recv',p.no+' 입고 완료',[i.name+' '+sq(i,q)+(q<p.qty?' (부분 입고, 발주 '+qty(i,p.qty)+')':''),'현재고 '+qty(i,i.stock)],hm(clock));
+  toast(i.name+' '+qty(i,q)+' 입고를 처리했습니다.');render();
+}
+function discardLot(no){
+  const m=IG.milk,l=m.lots.find(x=>x.no===no),before=m.stock;
+  m.lots=m.lots.filter(x=>x!==l);m.stock=m.lots.reduce((a,x)=>a+x.qty,0);tick();
+  const cost=l.qty*m.cost;S.waste.unshift({item:'우유',lot:l.no,q:l.qty,cost,exp:l.exp,t:hm(clock)});
+  txAdd('폐기',m,-l.qty,l.no+' 유통기한 '+md(l.exp));
+  log('danger','우유 폐기 등록',[l.no+' '+sq(m,-l.qty),'손실 '+won(cost)],hm(clock));
+  if(before>m.rop&&m.stock<=m.rop&&!openPO('milk'))makeSuggestion(m);
+  toast('폐기를 등록했습니다. 손실 '+won(cost));render();
+}
+function orderShortages(){
+  const p=predict(S.scn);let n=0;
+  ING.forEach(i=>{if(i.stock<p.need[i.id]&&!openPO(i.id)){makeSuggestion(i);n++}});
+  S.guide.fc=true;
+  toast(n?n+'건 발주 제안을 만들었습니다. 발주 관리에서 확정하세요.':'추가로 만들 발주 제안이 없습니다.');render();
+}
+function status(i){
+  if(i.stock<=i.d*i.L)return{c:'bad',t:'품절 위험',col:'var(--danger)'};
+  if(i.stock<=i.rop)return{c:'warn',t:'발주 필요',col:'var(--hot)'};
+  return{c:'ok',t:'정상',col:'var(--ok)'};
+}
+function dday(d){const n=Math.round((d-TODAY)/864e5);return n<=0?'D-day':'D-'+n}
+function ddn(d){return Math.round((d-TODAY)/864e5)}
+/* ---------- 화면 목록 ---------- */
+const SCR={
+ dash:{sid:'HOM-0001',g:'홈',t:'대시보드'},
+ pos:{sid:'SAL-0101',g:'영업관리',t:'판매 등록'},
+ sales:{sid:'SAL-0201',g:'영업관리',t:'판매 현황'},
+ stock:{sid:'INV-0101',g:'재고관리',t:'재고 현황'},
+ ledger:{sid:'INV-0201',g:'재고관리',t:'재고 수불부'},
+ lot:{sid:'INV-0301',g:'재고관리',t:'유통기한 관리'},
+ po:{sid:'PUR-0101',g:'구매관리',t:'발주 관리'},
+ recv:{sid:'PUR-0201',g:'구매관리',t:'입고 처리'},
+ vendor:{sid:'PUR-0301',g:'구매관리',t:'거래처 관리'},
+ bom:{sid:'PRD-0101',g:'레시피와 원가',t:'BOM 관리'},
+ cost:{sid:'PRD-0201',g:'레시피와 원가',t:'원가 분석'},
+ fc:{sid:'FCS-0101',g:'수요예측',t:'AI 수요 예측'},
+ staff:{sid:'FCS-0201',g:'수요예측',t:'근무 스케줄'},
+ item:{sid:'MST-0101',g:'기준정보',t:'품목 마스터'}
+};
+const TREE=[['홈','home',['dash']],['영업관리','cart',['pos','sales']],['재고관리','box',['stock','ledger','lot']],['구매관리','truck',['po','recv','vendor']],['레시피와 원가','cup',['bom','cost']],['수요예측','chart',['fc','staff']],['기준정보','gear',['item']]];
+TREE.forEach(t=>S.exp[t[0]]=true);
+const ICON={
+ home:'<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>',
+ cart:'<path d="M3 4h2l2 11h11l2-8H6.5"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
+ box:'<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/>',
+ truck:'<path d="M3 6h11v10H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/>',
+ cup:'<path d="M5 8h12v5a6 6 0 01-12 0z"/><path d="M17 9h1.5a2.5 2.5 0 010 5H17M8 3v2M11 3v2M14 3v2"/>',
+ chart:'<path d="M4 20V4M4 20h16"/><path d="M7 15l4-4 3 3 5-6"/>',
+ gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/>',
+ chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M7 7l10 10M17 7L7 17"/>',
+ refresh:'<path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 5v6h-6"/>',
+ excel:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 11l5 6M14 11l-5 6"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',check:'<path d="M5 12l5 5 9-10"/>'
+};
+function ic(n){return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`}
+
+/* ---------- 공통 화면 요소 ---------- */
+function head(extra){
+  const s=SCR[S.cur];
+  return `<div class="s-head"><div><div class="s-crumb">${s.g} › ${s.t}</div><div class="s-title"><h2>${s.t}</h2><span class="sid">${s.sid}</span></div></div>
+  <div class="tb">${extra||''}<button class="tbtn" data-act="query">${ic('refresh')}조회</button><button class="tbtn" data-act="excel">${ic('excel')}엑셀</button></div></div>`;
+}
+function seg(key,vals){return `<span class="seg" role="group">${vals.map(v=>`<button data-seg="${key}" data-val="${v}" aria-pressed="${S.f[key]===v}">${v}</button>`).join('')}</span>`}
+function dg(o){
+  if(o.export!==false&&!S.xg)S.xg={name:o.name||SCR[S.cur].t,cols:o.cols,rows:o.rows};
+  const n=o.cols.length+1+(o.check?1:0);
+  const th=(o.check?'<th class="c" style="width:34px"><input type="checkbox" data-checkall aria-label="전체 선택"></th>':'')+'<th class="rn">No</th>'+o.cols.map(c=>`<th class="${c.a||''}"${c.w?` style="min-width:${c.w}px"`:''}>${c.l}</th>`).join('');
+  const body=o.rows.length?o.rows.map((r,i)=>`<tr ${o.rowAttr?o.rowAttr(r):''}>${o.check?`<td class="c">${o.check(r)}</td>`:''}<td class="rn">${i+1}</td>${o.cols.map(c=>`<td class="${c.a||''}">${c.f?c.f(r):r[c.k]}</td>`).join('')}</tr>`).join('')
+    :`<tr><td class="empty" colspan="${n}">${o.empty||'조회 결과가 없습니다.'}</td></tr>`;
+  const foot=o.foot&&o.rows.length?`<tfoot><tr>${o.check?'<td></td>':''}<td class="rn"></td>${o.cols.map((c,i)=>`<td class="${c.a||''}">${o.foot[c.k]!==undefined?o.foot[c.k]:(i===0?'합계':'')}</td>`).join('')}</tr></tfoot>`:'';
+  return `<div class="box"><div class="box-h"><h3>${o.title||'조회 결과'}<span class="cnt">총 ${o.rows.length}건</span></h3>${o.side?`<span class="side">${o.side}</span>`:''}</div>
+  <div class="dgw"${o.maxh?` style="max-height:${o.maxh}px"`:''}><table class="dg num"><thead><tr>${th}</tr></thead><tbody>${body}</tbody>${foot}</table></div>${o.after||''}</div>`;
+}
+function strip(h){const d=document.createElement('div');d.innerHTML=String(h);return d.textContent.replace(/\s+/g,' ').trim()}
+function exportCSV(){
+  if(!S.xg){toast('이 화면에는 내보낼 표가 없습니다.');return}
+  const {cols,rows,name}=S.xg,esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const lines=[cols.map(c=>esc(c.l)).join(',')].concat(rows.map(r=>cols.map(c=>esc(strip(c.f?c.f(r):r[c.k]))).join(',')));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}));
+  a.download=name+'_'+YMD+'.csv';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  toast(name+' '+rows.length+'건을 엑셀(CSV) 파일로 내보냈습니다.');
+}
+let toastT;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
+
+/* ---------- 차트 ---------- */
+function hourlyChart(actual,fc){
+  const W=640,H=190,pl=30,pb=22,pt=8,bw=(W-pl-6)/HOURS.length;
+  const mx=Math.max(...fc,...HOURS.map(h=>actual?actual[h]||0:0))*1.1||1;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="시간대별 판매 잔 수">`;
+  [0,.5,1].forEach(f=>{const y=pt+(H-pt-pb)*(1-f);s+=`<line x1="${pl}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="10.5" fill="var(--ink-2)">${Math.round(mx*f)}</text>`});
+  HOURS.forEach((h,i)=>{
+    const x=pl+i*bw+bw*.18,w=bw*.64,fh=(H-pt-pb)*fc[i]/mx;
+    s+=`<rect x="${x}" y="${H-pb-fh}" width="${w}" height="${fh}" fill="none" stroke="var(--ink-2)" stroke-dasharray="3 3" rx="2"/>`;
+    if(actual&&actual[h]>0){const ah=(H-pt-pb)*actual[h]/mx;s+=`<rect x="${x+3}" y="${H-pb-ah}" width="${w-6}" height="${ah}" fill="var(--primary)" rx="2"/>`}
+    s+=`<text x="${x+w/2}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="${actual&&h===NOW_H?'var(--ink)':'var(--ink-2)'}" font-weight="${actual&&h===NOW_H?700:400}">${h}시</text>`;
+  });
+  return s+'</svg>';
+}
+function weekChart(){
+  const W=640,H=170,pl=44,pb=22,pt=8;
+  const rows=S.hist.map(x=>({lab:md(x.d)+' '+DOW[x.d.getDay()],v:x.rev,t:false}));rows.push({lab:'오늘',v:S.today.rev,t:true});
+  const mx=Math.max(...rows.map(r=>r.v))*1.1,bw=(W-pl-6)/rows.length;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="최근 8일 매출">`;
+  [0,.5,1].forEach(f=>{const y=pt+(H-pt-pb)*(1-f);s+=`<line x1="${pl}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="10.5" fill="var(--ink-2)">${Math.round(mx*f/10000)}만</text>`});
+  rows.forEach((r,i)=>{const x=pl+i*bw+bw*.22,w=bw*.56,h=(H-pt-pb)*r.v/mx;
+    s+=`<rect x="${x}" y="${H-pb-h}" width="${w}" height="${h}" rx="2" fill="${r.t?'var(--primary)':'var(--ink-2)'}" opacity="${r.t?1:.4}"/><text x="${x+w/2}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">${r.lab}</text>`});
+  return s+'</svg>';
+}
+function splitBar(r){const ip=Math.round(r*100);return `<div class="split" role="img" aria-label="핫 ${100-ip}%, 아이스 ${ip}%"><div class="h" style="width:${100-ip}%">핫 ${100-ip}%</div><div class="i" style="width:${ip}%">아이스 ${ip}%</div></div>`}
+function wxText(s){return (s.rain?'비':'맑음')+', 최고 '+s.tmax+'℃'+(s.pm?', 미세먼지 나쁨':'')+(s.holiday?', 공휴일':'')}
+
+/* ---------- 대시보드 ---------- */
+function todos(){
+  const a=[];
+  ING.forEach(i=>{const s=status(i),o=openPO(i.id);if(s.c!=='ok')a.push({st:s,txt:i.name+' '+s.t,sub:'현재 '+qty(i,i.stock)+', 재주문점 '+qty(i,i.rop)+(o?', '+POLAB[o.status]+' 발주 있음':''),go:o?(o.status==='제안'?'po':'recv'):'stock'})});
+  IG.milk.lots.forEach(l=>{if(ddn(l.exp)<=1)a.push({st:{c:'warn',t:'임박'},txt:'우유 유통기한 '+dday(l.exp),sub:l.no+', '+qty(IG.milk,l.qty)+' 먼저 사용',go:'lot'})});
+  const sug=S.pos.filter(p=>p.status==='제안').length,ing=S.pos.filter(p=>p.status==='발주완료').length;
+  if(sug)a.push({st:{c:'blue',t:'승인'},txt:'발주 제안 '+sug+'건 확정 대기',sub:'시스템이 재주문점 기준으로 생성',go:'po'});
+  if(ing)a.push({st:{c:'mute',t:'입고'},txt:'입고 예정 '+ing+'건',sub:'도착하면 검수 후 입고 확정',go:'recv'});
+  return a;
+}
+function rDash(){
+  const p=predict(S.scn),g=S.guide;
+  const rem=HOURS.reduce((a,h,i)=>a+(h>=NOW_H?p.hourly[i]:0),0),avg=p.revenue/p.drinks,close=Math.round((S.today.rev+rem*avg)/100)*100;
+  const td=todos();
+  return head()+`
+  <div class="cols c4">
+    <div class="box kpi"><div class="k">오늘 매출<span class="st blue">14시 기준</span></div><div class="v num">${won(S.today.rev)}</div><div class="s">주문 ${int(S.today.cups)}잔, 객단가 ${won(S.today.rev/Math.max(1,S.today.cups))}</div></div>
+    <div class="box kpi"><div class="k">예상 마감 매출</div><div class="v num">${won(close)}</div><div class="s">실제 매출과 남은 시간 예측 ${int(rem)}잔의 합</div></div>
+    <div class="box kpi"><div class="k">예상 손님<span class="st mute">AI</span></div><div class="v num">${p.y}명</div><div class="s">80% 구간 ${p.lo}~${p.hi}명</div></div>
+    <div class="box kpi"><div class="k">확인할 일</div><div class="v num">${td.length}건</div><div class="s">권장 근무 최대 ${p.staff}명 (피크 ${p.peakH}시)</div></div>
+  </div>
+  <div class="cols c32" style="margin-top:10px">
+    <div class="box"><div class="box-h"><h3>시간대별 판매</h3><span class="side">채운 막대는 실제, 점선은 예측</span></div><div class="box-b chart">${hourlyChart(S.today.hourly,p.hourly)}</div></div>
+    <div class="box"><div class="box-h"><h3>업무 알림<span class="cnt">${td.length}건</span></h3></div>
+      ${td.length?`<ul class="todo">${td.map(a=>`<li><span class="st ${a.st.c}">${a.st.t}</span><span class="grow">${a.txt}<small>${a.sub}</small></span><button class="tbtn" data-open="${a.go}">열기</button></li>`).join('')}</ul>`:'<p class="box-b muted" style="margin:0">처리할 업무가 없습니다.</p>'}
+    </div>
+  </div>
+  <div class="cols c32" style="margin-top:10px">
+    <div class="box"><div class="box-h"><h3>최근 매출</h3><span class="side">오늘은 14시까지</span></div><div class="box-b chart">${weekChart()}</div></div>
+    <div style="display:grid;gap:10px;align-content:start">
+      <div class="box"><div class="box-h"><h3>체험 가이드</h3><span class="side">${[g.sell,g.po,g.fc].filter(Boolean).length}/3 완료</span></div>
+        <ol class="guide">
+          <li class="${g.sell?'done':''}"><span class="grow">점심 피크 판매 등록<small>재료가 레시피대로 차감되는 것을 확인</small></span><button class="tbtn" data-open="pos">판매 등록</button></li>
+          <li class="${g.po?'done':''}"><span class="grow">발주 제안 확정<small>재주문점 아래 품목이 자동 제안됨</small></span><button class="tbtn" data-open="po">발주 관리</button></li>
+          <li class="${g.fc?'done':''}"><span class="grow">날씨 바꿔 예측하기<small>부족한 재료를 발주 제안으로 연결</small></span><button class="tbtn" data-open="fc">수요 예측</button></li>
+        </ol></div>
+      <div class="box"><div class="box-h"><h3>오늘 날씨</h3><span class="side">시나리오 값</span></div><div class="box-b">
+        <div class="weather"><span class="tmp num">${S.scn.tmax}℃</span><span>${DOW[S.scn.dow]}요일<br><span class="muted">${wxText(S.scn)}</span></span><button class="tbtn" data-open="fc" style="margin-left:auto">변경</button></div>
+        <div style="margin-top:10px">${splitBar(p.r)}</div></div></div>
+    </div>
+  </div>`;
+}
+
+/* ---------- 영업관리 ---------- */
+function rPos(){
+  return head()+`
+  <div class="box"><div class="box-h"><h3>메뉴 선택</h3><span class="side">누를 때마다 1잔이 판매로 등록됩니다</span></div><div class="box-b">
+    <div class="menu-grid">${MENU.map(m=>`<button class="mbtn ${m.temp}" data-sell="${m.id}"><b>${m.name}</b><span>${m.temp==='ice'?'아이스':'핫'}, ${won(m.price)}</span></button>`).join('')}</div>
+    <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="tbtn pri" id="rush">${ic('plus')}점심 피크 30잔 일괄 등록</button><span class="muted" style="font-size:12px">오늘 날씨의 아이스 비율대로 메뉴가 섞입니다. 등록 즉시 재고 수불부에 출고가 기록됩니다.</span></div>
+  </div></div>
+  ${menuGrid()}`;
+}
+function menuGrid(){
+  const rows=MENU.map(m=>({m,c:S.today.count[m.id]})).sort((a,b)=>b.c-a.c),tot=S.today.cups||1;
+  return dg({title:'오늘 메뉴별 판매',name:'메뉴별 판매',rows,cols:[
+    {l:'메뉴코드',k:'code',f:r=>r.m.code},{l:'메뉴',k:'name',w:120,f:r=>r.m.name+ttag(r.m)},{l:'판매가',k:'price',a:'r',f:r=>won(r.m.price)},
+    {l:'수량',k:'c',a:'r',f:r=>int(r.c)},{l:'매출',k:'rev',a:'r',f:r=>won(r.c*r.m.price)},
+    {l:'비중',k:'sh',w:110,f:r=>`<div class="bar1"><i style="width:${r.c/tot*100}%;background:${r.m.temp==='ice'?'var(--ice)':'var(--hot)'}"></i></div>`}],
+    foot:{c:int(S.today.cups),rev:won(S.today.rev)}});
+}
+function rSales(){
+  const v=S.f.salesView;let body;
+  if(v==='메뉴별')body=menuGrid();
+  else if(v==='시간대별'){
+    const p=predict(S.scn);
+    const rows=HOURS.map((h,i)=>({h,a:S.today.hourly[h]||0,f:p.hourly[i]}));
+    body=dg({title:'시간대별 판매',rows,cols:[
+      {l:'시간대',k:'h',f:r=>r.h+':00~'+r.h+':59'},{l:'실제 잔 수',k:'a',a:'r',f:r=>r.h>NOW_H?'<span class="muted">영업 전</span>':int(r.a)},
+      {l:'예측 잔 수',k:'f',a:'r',f:r=>int(r.f)},{l:'차이',k:'d',a:'r',f:r=>r.h>NOW_H?'':(r.a-r.f>=0?'+':'')+int(r.a-r.f)},
+      {l:'달성률',k:'p',a:'r',f:r=>r.h>NOW_H?'':Math.round(r.a/r.f*100)+'%'}],
+      foot:{a:int(S.today.cups),f:int(p.drinks)}});
+  }else{
+    const rows=S.hist.slice().reverse();
+    const mape=rows.reduce((a,r)=>a+Math.abs(r.act-r.pred)/r.act,0)/rows.length*100;
+    body=dg({title:'일별 매출과 예측 정확도',rows,side:'최근 7일 MAPE '+mape.toFixed(1)+'%',cols:[
+      {l:'일자',k:'d',f:r=>ymd(r.d)},{l:'요일',k:'w',a:'c',f:r=>DOW[r.d.getDay()]},{l:'날씨',k:'s',w:150,f:r=>wxText(r.sc)},
+      {l:'예측 손님',k:'pred',a:'r',f:r=>int(r.pred)},{l:'실제 손님',k:'act',a:'r',f:r=>int(r.act)},
+      {l:'오차율',k:'e',a:'r',f:r=>{const e=(r.act-r.pred)/r.act*100;return `<span class="${Math.abs(e)>10?'short':''}">${e>=0?'+':''}${e.toFixed(1)}%</span>`}},
+      {l:'매출',k:'rev',a:'r',f:r=>won(r.rev)}],
+      foot:{rev:won(rows.reduce((a,r)=>a+r.rev,0))},
+      after:'<p class="hint" style="padding:0 12px 10px">MAPE(평균 절대 백분율 오차)는 예측이 실제와 평균 몇 % 어긋났는지를 뜻합니다. 가상 데이터로 계산한 값입니다.</p>'});
+  }
+  return head()+`<div class="cond"><span class="f"><label class="k">조회 일자</label><input value="${ymd(TODAY)}" readonly style="width:110px" aria-label="조회 일자"></span><span class="f"><label class="k">보기</label>${seg('salesView',['메뉴별','시간대별','일별'])}</span></div>`+body;
+}
+
+/* ---------- 재고관리 ---------- */
+function rStock(){
+  const f=S.f,sel=IG[S.selIng];
+  const rows=ING.filter(i=>(f.stockCat==='전체'||i.cat===f.stockCat)&&(f.stockSt==='전체'||status(i).t===f.stockSt)&&(!f.stockQ||i.name.includes(f.stockQ)||i.code.includes(f.stockQ.toUpperCase())));
+  const recent=S.tx.filter(t=>t.ing===sel.id).slice(0,6);
+  return head(`<button class="tbtn" data-act="newpo">${ic('plus')}선택 품목 발주</button>`)+`
+  <div class="cond">
+    <span class="f"><label class="k">품목 구분</label>${seg('stockCat',['전체','원재료','부자재'])}</span>
+    <span class="f"><label class="k" for="fSt">재고 상태</label><select id="fSt" data-f="stockSt">${['전체','정상','발주 필요','품절 위험'].map(v=>`<option ${f.stockSt===v?'selected':''}>${v}</option>`).join('')}</select></span>
+    <span class="f"><label class="k" for="stockQ">품목명</label><input id="stockQ" type="search" value="${f.stockQ}" placeholder="이름 또는 코드" style="width:150px"></span>
+  </div>
+  ${dg({title:'품목별 재고',rows,side:'행을 누르면 아래에 상세가 표시됩니다',
+    rowAttr:i=>`class="click ${i.id===S.selIng?'sel':''}" data-ing="${i.id}" tabindex="0"`,
+    cols:[{l:'품목코드',k:'code'},{l:'품목명',k:'name',w:100},{l:'구분',k:'cat'},
+      {l:'현재고',k:'stock',a:'r',f:i=>qty(i,i.stock)},
+      {l:'재고 / 재주문점',k:'g',w:130,f:i=>{const s=status(i),mx=i.rop*2.5;return `<div class="gauge" aria-hidden="true"><div class="fill" style="width:${Math.min(100,i.stock/mx*100)}%;background:${s.col}"></div><div class="rop" style="left:40%"></div></div>`}},
+      {l:'일평균 사용',k:'d',a:'r',f:i=>qty(i,i.d)},{l:'리드타임',k:'L',a:'r',f:i=>i.L+'일'},
+      {l:'안전재고',k:'ss',a:'r',f:i=>qty(i,i.ss)},{l:'재주문점',k:'rop',a:'r',f:i=>qty(i,i.rop)},
+      {l:'상태',k:'st',a:'c',f:i=>{const s=status(i);return `<span class="st ${s.c}">${s.t}</span>`}}]})}
+  <div class="cols c2" style="margin-top:10px">
+    <div class="box"><div class="box-h"><h3>${sel.name} 재주문점 계산</h3><span class="side">${sel.code}</span></div><div class="box-b calc">
+      <div>하루 평균 사용량 d = <b class="num">${qty(sel,sel.d)}</b>, 표준편차 σ = d × 18% = <span class="num">${qty(sel,sel.sd)}</span></div>
+      <div>리드타임 L = ${sel.L}일, 서비스 수준 95% (z = 1.65)</div>
+      <div class="eq">안전재고 = 1.65 × ${qty(sel,sel.sd)} × √${sel.L} = ${qty(sel,sel.ss)}</div>
+      <div class="eq">재주문점 = ${qty(sel,sel.d)} × ${sel.L} + ${qty(sel,sel.ss)} = ${qty(sel,sel.rop)}</div>
+      <div>${needOrder(sel)?`목표 재고에 못 미쳐 지금 발주한다면 <b>${qty(sel,suggestQty(sel))}</b> (포장 단위 ${qty(sel,sel.pack)})`:'목표 재고보다 많아 지금은 발주가 필요 없습니다.'}</div>
+    </div></div>
+    ${dg({title:sel.name+' 최근 수불',export:false,rows:recent,empty:'수불 기록이 없습니다.',cols:[
+      {l:'시각',k:'t'},{l:'구분',k:'type',f:t=>txChip(t.type)},{l:'수량',k:'q',a:'r',f:t=>t.type==='기초재고'?'':sq(sel,t.q)},{l:'잔량',k:'bal',a:'r',f:t=>qty(sel,t.bal)}]})}
+  </div>`;
+}
+function txChip(t){const c={'기초재고':'mute','판매출고':'warn','구매입고':'ok','폐기':'bad'}[t];return `<span class="st ${c}">${t}</span>`}
+function rLedger(){
+  const f=S.f;
+  const rows=S.tx.filter(t=>(f.ledIng==='all'||t.ing===f.ledIng)&&(f.ledType==='전체'||t.type===f.ledType));
+  return head()+`
+  <div class="cond">
+    <span class="f"><label class="k">기간</label><input value="${ymd(TODAY)} ~ ${ymd(TODAY)}" readonly style="width:190px" aria-label="기간"></span>
+    <span class="f"><label class="k" for="fLi">품목</label><select id="fLi" data-f="ledIng"><option value="all">전체</option>${ING.map(i=>`<option value="${i.id}" ${f.ledIng===i.id?'selected':''}>${i.name}</option>`).join('')}</select></span>
+    <span class="f"><label class="k">구분</label>${seg('ledType',['전체','기초재고','판매출고','구매입고','폐기'])}</span>
+  </div>
+  ${dg({title:'재고 수불 내역',rows,maxh:470,side:'최근 처리 순',cols:[
+    {l:'일시',k:'t',f:t=>ymd(TODAY)+' '+t.t},{l:'구분',k:'type',a:'c',f:t=>txChip(t.type)},{l:'품목코드',k:'c',f:t=>IG[t.ing].code},{l:'품목명',k:'n',f:t=>IG[t.ing].name},
+    {l:'입고',k:'in',a:'r',f:t=>t.q>0&&t.type!=='기초재고'?qty(IG[t.ing],t.q):''},{l:'출고',k:'out',a:'r',f:t=>t.q<0?qty(IG[t.ing],-t.q):''},
+    {l:'잔량',k:'bal',a:'r',f:t=>qty(IG[t.ing],t.bal)},{l:'참조',k:'ref',w:140}]})}
+  <p class="hint">판매 1건이 레시피(BOM)를 거쳐 재료별 출고로 바뀐 기록입니다. 영업 시작부터 14시까지는 시간대별로 묶어 표시했습니다.</p>`;
+}
+function rLot(){
+  const m=IG.milk,lots=m.lots.slice().sort((a,b)=>a.exp-b.exp);
+  return head()+`
+  <div class="cond"><span class="f"><label class="k">품목</label><select aria-label="품목"><option>우유 (RM-102)</option></select></span><span class="muted" style="font-size:12px">유통기한을 관리하는 품목은 입고 묶음(LOT)별로 수량을 따로 기록합니다.</span></div>
+  ${dg({title:'LOT별 재고',rows:lots,empty:'남은 LOT가 없습니다. 입고 처리 화면에서 입고를 확정하세요.',cols:[
+    {l:'LOT 번호',k:'no'},{l:'입고일',k:'recv',f:l=>ymd(l.recv)},{l:'유통기한',k:'exp',f:l=>ymd(l.exp)},
+    {l:'잔여일',k:'dd',a:'c',f:l=>`<span class="st ${ddn(l.exp)<=1?'bad':ddn(l.exp)<=3?'warn':'mute'}">${dday(l.exp)}</span>`},
+    {l:'잔량',k:'qty',a:'r',f:l=>qty(m,l.qty)},{l:'재고 금액',k:'amt',a:'r',f:l=>won(l.qty*m.cost)},
+    {l:'사용 순서',k:'o',a:'c',f:l=>lots.indexOf(l)===0?'<span class="st blue">다음 사용</span>':''},
+    {l:'처리',k:'act',a:'c',f:l=>ddn(l.exp)<=1?`<button class="tbtn" data-discard="${l.no}">폐기 등록</button>`:''}],
+    foot:{qty:qty(m,m.stock),amt:won(m.stock*m.cost)}})}
+  ${dg({title:'폐기 이력',export:false,rows:S.waste,empty:'오늘 폐기한 재료가 없습니다. 폐기를 기록해두면 예측 도입 전후의 낭비를 비교할 수 있습니다.',cols:[
+    {l:'시각',k:'t'},{l:'LOT 번호',k:'lot'},{l:'품목',k:'item'},{l:'수량',k:'q',a:'r',f:w=>qty(m,w.q)},{l:'손실액',k:'cost',a:'r',f:w=>won(w.cost)}],
+    foot:{cost:won(S.waste.reduce((a,w)=>a+w.cost,0))}})}
+  <p class="hint">판매 시에는 유통기한이 가장 빠른 LOT부터 자동 차감됩니다(선입선출).</p>`;
+}
+
+/* ---------- 구매관리 ---------- */
+const POST={'제안':'blue','발주완료':'warn','입고완료':'ok'};
+const POLAB={'제안':'확정 대기','발주완료':'입고 대기','입고완료':'입고 완료'};
+function rPO(){
+  const f=S.f,rows=S.pos.filter(p=>f.poSt==='전체'||POLAB[p.status]===f.poSt);
+  const nSug=S.pos.filter(p=>p.status==='제안').length;
+  return head(`<button class="tbtn" data-act="newpo">${ic('plus')}신규 발주</button><button class="tbtn pri" data-act="placeSel" ${nSug?'':'disabled'}>${ic('check')}선택 발주 확정</button>`)+`
+  <div class="cond"><span class="f"><label class="k">발주일</label><input value="${ymd(addDays(TODAY,-7))} ~ ${ymd(TODAY)}" readonly style="width:190px" aria-label="발주일"></span>
+    <span class="f"><label class="k">진행 상태</label>${seg('poSt',['전체','확정 대기','입고 대기','입고 완료'])}</span></div>
+  ${dg({title:'발주 목록',rows,
+    check:p=>p.status==='제안'?`<input type="checkbox" data-chk="${p.no}" aria-label="${p.no} 선택">`:'',
+    cols:[{l:'발주번호',k:'no'},{l:'발주일',k:'date',f:p=>ymd(p.date)},{l:'품목',k:'ing',f:p=>IG[p.ing].name},
+      {l:'수량',k:'qty',a:'r',f:p=>qty(IG[p.ing],p.qty)},{l:'금액',k:'amt',a:'r',f:p=>won(p.qty*IG[p.ing].cost)},
+      {l:'거래처',k:'sup',f:p=>VG[IG[p.ing].sup].name},{l:'입고 예정',k:'due',f:p=>ymd(p.due)},{l:'작성',k:'by',a:'c'},
+      {l:'상태',k:'status',a:'c',f:p=>`<span class="st ${POST[p.status]}">${POLAB[p.status]}</span>`},
+      {l:'처리',k:'act',a:'c',f:p=>p.status==='제안'?`<button class="tbtn" data-place="${p.no}">발주 확정</button>`:p.status==='발주완료'?`<button class="tbtn" data-open="recv">입고 처리</button>`:''}],
+    foot:{amt:won(rows.reduce((a,p)=>a+p.qty*IG[p.ing].cost,0))}})}
+  <div class="box" style="margin-top:10px"><div class="box-b calc">
+    <div class="eq">제안 수량 = 목표 재고 − 현재고, 포장 단위로 올림</div>
+    <div>목표 재고 = 일평균 사용량 × (리드타임 + 발주 주기 ${REVIEW}일) + 안전재고</div>
+    <div class="muted">작성이 ‘시스템’인 건은 재고가 재주문점 아래로 내려가는 순간 자동으로 만들어진 제안입니다.</div>
+  </div></div>`;
+}
+function rRecv(){
+  const wait=S.pos.filter(p=>p.status==='발주완료'),done=S.pos.filter(p=>p.status==='입고완료');
+  const dv=i=>i.div>1?i.big:i.unit,toD=(i,v)=>i.div>1?(v/i.div).toFixed(1):v;
+  return head()+`
+  ${dg({title:'입고 대기',rows:wait,empty:'입고 대기 중인 발주가 없습니다. 발주 관리에서 제안을 확정하세요.',cols:[
+    {l:'발주번호',k:'no'},{l:'품목',k:'ing',f:p=>IG[p.ing].name},{l:'거래처',k:'sup',f:p=>VG[IG[p.ing].sup].name},
+    {l:'입고 예정',k:'due',f:p=>`${ymd(p.due)} <span class="st ${ddn(p.due)<=0?'warn':'mute'}">${ddn(p.due)<=0?'오늘 도착':dday(p.due)}</span>`},
+    {l:'발주 수량',k:'qty',a:'r',f:p=>qty(IG[p.ing],p.qty)},
+    {l:'검수 수량',k:'iq',a:'r',f:p=>{const i=IG[p.ing];return `<input class="qin num" type="number" min="0" step="${i.div>1?'0.1':'1'}" value="${toD(i,p.qty)}" data-rq="${p.no}" aria-label="${p.no} 검수 수량"> ${dv(i)}`}},
+    {l:'처리',k:'act',a:'c',f:p=>`<button class="tbtn pri" data-recv="${p.no}">입고 확정</button>`}]})}
+  ${dg({title:'입고 완료',export:false,rows:done,empty:'오늘 입고 완료된 건이 없습니다.',cols:[
+    {l:'발주번호',k:'no'},{l:'품목',k:'ing',f:p=>IG[p.ing].name},{l:'발주 수량',k:'qty',a:'r',f:p=>qty(IG[p.ing],p.qty)},
+    {l:'입고 수량',k:'rq',a:'r',f:p=>qty(IG[p.ing],p.recvQty)},{l:'차이',k:'df',a:'r',f:p=>p.recvQty<p.qty?`<span class="short">−${qty(IG[p.ing],p.qty-p.recvQty)}</span>`:'없음'}]})}
+  <p class="hint">검수 수량을 발주 수량보다 적게 입력하면 부분 입고로 기록됩니다. 우유는 유통기한 7일짜리 새 LOT로 들어갑니다.</p>`;
+}
+function rVendor(){
+  return head(`<button class="tbtn" disabled>${ic('plus')}신규 거래처</button>`)+
+  dg({title:'거래처 목록',rows:VENDORS,cols:[
+    {l:'거래처코드',k:'id'},{l:'거래처명',k:'name',w:110},{l:'담당자',k:'person'},{l:'연락처',k:'tel',f:v=>v.tel+' <span class="muted">(가상)</span>'},
+    {l:'리드타임',k:'lead',a:'c'},{l:'주문 마감',k:'cut'},{l:'결제 조건',k:'pay'},
+    {l:'취급 품목',k:'items',w:200,f:v=>ING.filter(i=>i.sup===v.id).map(i=>i.name).join(', ')},
+    {l:'진행 중 발주',k:'open',a:'r',f:v=>S.pos.filter(p=>p.status!=='입고완료'&&IG[p.ing].sup===v.id).length+'건'}]})+
+  '<p class="hint">거래처와 담당자, 연락처는 모두 가상 정보입니다. 신규 등록은 관리자 권한이 필요해 데모에서는 비활성화했습니다.</p>';
+}
+
+/* ---------- 레시피와 원가 ---------- */
+function menuCost(m){let c=0;for(const k in m.bom)c+=m.bom[k]*IG[k].cost;return c}
+function rBom(){
+  const m=MG[S.selMenu],c=menuCost(m),rows=Object.keys(m.bom).map(k=>({i:IG[k],u:m.bom[k]}));
+  return head()+`<div class="cols c23">
+  ${dg({title:'메뉴 목록',name:'메뉴 목록',rows:MENU,rowAttr:x=>`class="click ${x.id===S.selMenu?'sel':''}" data-menu="${x.id}" tabindex="0"`,cols:[
+    {l:'메뉴코드',k:'code'},{l:'메뉴명',k:'name',f:x=>x.name+ttag(x)},{l:'판매가',k:'price',a:'r',f:x=>won(x.price)},{l:'원가',k:'c',a:'r',f:x=>won(menuCost(x))}]})}
+  ${dg({title:mname(m)+' 1잔 BOM',export:false,side:m.code,rows,cols:[
+    {l:'품목코드',k:'c',f:r=>r.i.code},{l:'재료',k:'n',f:r=>r.i.name},
+    {l:'사용량',k:'u',a:'r',f:r=>`<input class="qin num" type="number" min="0" step="1" value="${r.u}" data-bom="${r.i.id}" aria-label="${r.i.name} 사용량"> ${r.i.unit}`},
+    {l:'단가',k:'p',a:'r',f:r=>r.i.cost+'원/'+r.i.unit},{l:'원가',k:'cost',a:'r',f:r=>won(r.u*r.i.cost)}],
+    foot:{p:'원가율 '+(c/m.price*100).toFixed(1)+'%',cost:won(c)},
+    after:'<p class="hint" style="padding:0 12px 10px">사용량을 바꾸면 원가가 바로 다시 계산되고, 이후 판매부터 새 기준으로 재고가 차감됩니다.</p>'})}
+  </div>`;
+}
+function rCost(){
+  const rows=MENU.map(m=>({m,c:menuCost(m),n:S.today.count[m.id]}));
+  const tot=rows.reduce((a,r)=>a+(r.m.price-r.c)*r.n,0);
+  return head()+dg({title:'메뉴별 원가와 공헌이익',rows,cols:[
+    {l:'메뉴코드',k:'code',f:r=>r.m.code},{l:'메뉴',k:'name',w:110,f:r=>r.m.name+ttag(r.m)},{l:'판매가',k:'p',a:'r',f:r=>won(r.m.price)},
+    {l:'재료 원가',k:'c',a:'r',f:r=>won(r.c)},
+    {l:'원가율',k:'rate',w:150,f:r=>{const p=r.c/r.m.price*100;return `<span style="display:flex;align-items:center;gap:8px"><span class="bar1" style="flex:1"><i style="width:${Math.min(100,p*2.5)}%;background:${p>30?'var(--hot)':'var(--ok)'}"></i></span><span class="num" style="width:44px;text-align:right">${p.toFixed(1)}%</span></span>`}},
+    {l:'잔당 공헌이익',k:'cm',a:'r',f:r=>won(r.m.price-r.c)},{l:'오늘 판매',k:'n',a:'r',f:r=>int(r.n)+'잔'},
+    {l:'오늘 공헌이익',k:'tcm',a:'r',f:r=>won((r.m.price-r.c)*r.n)}],
+    foot:{n:int(S.today.cups)+'잔',tcm:won(tot)}})+
+  '<p class="hint">공헌이익은 판매가에서 재료 원가만 뺀 값입니다. 판매가는 부가세 포함, 인건비와 임대료는 제외했습니다. 원가율 막대는 30%를 넘으면 앰버색으로 표시됩니다.</p>';
+}
+
+/* ---------- 수요예측 ---------- */
+const PRESETS={clear:{label:'맑고 쌀쌀함',tmax:14,rain:false,pm:false},rain:{label:'비',tmax:12,rain:true,pm:false},heat:{label:'폭염',tmax:34,rain:false,pm:false},cold:{label:'한파',tmax:-6,rain:false,pm:false},dust:{label:'미세먼지',tmax:16,rain:false,pm:true}};
+function rFc(){
+  const s=S.scn;
+  return head(`<button class="tbtn pri" data-act="short">${ic('plus')}부족분 발주 제안</button>`)+`
+  <div class="cond">
+    <span class="f"><label class="k req" for="fDow">예측 요일</label><select id="fDow">${DOW.map((d,i)=>`<option value="${i}" ${i===s.dow?'selected':''}>${d}요일</option>`).join('')}</select></span>
+    <span class="f"><label class="k">날씨 시나리오</label><span class="seg" role="group">${Object.keys(PRESETS).map(k=>`<button data-preset="${k}" aria-pressed="${S.preset===k}">${PRESETS[k].label}</button>`).join('')}</span></span>
+    <span class="f"><label class="k" for="fT">최고기온</label><input id="fT" type="range" min="-10" max="38" step="1" value="${s.tmax}" style="width:150px"><output id="fTo" class="num" for="fT" style="min-width:44px;margin-left:6px">${s.tmax}℃</output></span>
+    <span class="f" style="gap:12px"><label class="chk"><input type="checkbox" id="fRain" ${s.rain?'checked':''}>비</label><label class="chk"><input type="checkbox" id="fPm" ${s.pm?'checked':''}>미세먼지 나쁨</label><label class="chk"><input type="checkbox" id="fHol" ${s.holiday?'checked':''}>공휴일</label></span>
+  </div>
+  <div id="fcOut">${fcOut()}</div>`;
+}
+function fcOut(){
+  const s=S.scn,p=predict(s);
+  const mxAbs=Math.max(...p.parts.map(x=>Math.abs(x.v)),1),negMax=Math.max(0,...p.parts.map(x=>-x.v));
+  const zero=negMax/(mxAbs+negMax)*100,scale=100/(mxAbs+negMax);
+  const need=ING.filter(i=>p.need[i.id]>0);
+  S.xg=null;
+  return `<div class="cols c2">
+    <div class="box"><div class="box-h"><h3>예측 결과</h3><span class="side">${DOW[s.dow]}요일, ${wxText(s)}</span></div><div class="box-b">
+      <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap"><div><div class="muted" style="font-size:12px">예상 손님</div><div class="big num">${p.y}명</div></div>
+      <div class="muted" style="font-size:12px;padding-bottom:6px">80% 확률 구간 ${p.lo}~${p.hi}명<br>예상 음료 ${int(p.drinks)}잔, 매출 ${won(Math.round(p.revenue/100)*100)}</div></div>
+      <div style="margin:12px 0 16px">${splitBar(p.r)}</div>
+      <div class="muted" style="font-size:12px;margin-bottom:6px">예측 근거 (회귀식 항목별 기여)</div>
+      <div class="contrib num">${p.parts.map(x=>{const w=Math.abs(x.v)*scale,left=x.v>=0?zero:zero-w;
+        return `<span>${x.k}</span><div class="bar"><span class="axis" style="left:${zero}%"></span><i style="left:${left}%;width:${w}%;background:${x.v>=0?'var(--ink-2)':'var(--danger)'}"></i></div><span style="text-align:right">${x.v>=0?'+':''}${Math.round(x.v)}</span>`}).join('')}</div>
+      <p class="hint">지난주 같은 요일 ${p.lag}명${s.holiday?'(공휴일이라 주말 평균)':''}에서 출발해 날씨 효과를 더하고 뺍니다. 계수는 시연용 가상값입니다.</p>
+    </div></div>
+    <div class="box"><div class="box-h"><h3>시간대별 예상 잔 수</h3><span class="side">권장 근무 최대 ${p.staff}명</span></div><div class="box-b chart">${hourlyChart(null,p.hourly)}
+      <p class="hint">가장 바쁜 ${p.peakH}시에 약 ${int(p.peak)}잔. 바리스타 1명이 시간당 ${CAP}잔을 처리한다고 가정했습니다. 요일별 인원은 근무 스케줄 화면에서 볼 수 있습니다.</p></div></div>
+  </div>
+  <div class="cols c2" style="margin-top:10px">
+    ${dg({title:'하루 필요 재료와 현재고',name:'필요 재료',rows:need,cols:[
+      {l:'품목',k:'name'},{l:'예상 사용',k:'n',a:'r',f:i=>qty(i,p.need[i.id])},{l:'현재고',k:'s',a:'r',f:i=>qty(i,i.stock)},
+      {l:'과부족',k:'g',a:'r',f:i=>{const g=i.stock-p.need[i.id];return g<0?`<span class="short">부족 ${qty(i,-g)}</span>`:`<span class="okc">여유 ${qty(i,g)}</span>`}},
+      {l:'진행 발주',k:'po',a:'c',f:i=>{const o=openPO(i.id);return o?`<span class="st ${POST[o.status]}">${POLAB[o.status]}</span>`:''}}]})}
+    ${dg({title:'메뉴별 예상 판매',export:false,rows:p.menu.slice().sort((a,b)=>b.qty-a.qty),cols:[
+      {l:'메뉴',k:'name',f:m=>m.name+ttag(m)},{l:'예상 잔 수',k:'qty',a:'r',f:m=>int(m.qty)},{l:'예상 매출',k:'r',a:'r',f:m=>won(Math.round(m.qty*m.price/100)*100)}]})}
+  </div>`;
+}
+function rStaff(){
+  const days=[0,1,2,3,4,5,6].map(k=>{const d=addDays(TODAY,k),sc=k===0?S.scn:{dow:d.getDay(),tmax:14,rain:false,pm:false,holiday:false};return{d,k,p:predict(sc)}});
+  const cell=n=>{const bg=n>=3?'var(--primary)':n===2?'var(--primary-soft)':'var(--surface-2)',fg=n>=3?'var(--primary-ink)':n===2?'var(--primary)':'var(--ink-2)';return `<span style="display:block;margin:0 -4px;padding:5px 0;background:${bg};color:${fg};border-radius:3px">${n}</span>`};
+  const cols=[{l:'일자',k:'d',f:r=>md(r.d)+' '+DOW[r.d.getDay()]+(r.k===0?' <span class="st blue">오늘</span>':'')},{l:'예상 손님',k:'y',a:'r',f:r=>int(r.p.y)+'명'}]
+    .concat(HOURS.map((h,i)=>({l:h+'시',k:'h'+h,a:'c',f:r=>cell(r.p.staffH[i])})))
+    .concat([{l:'최대 인원',k:'mx',a:'r',f:r=>r.p.staff+'명'},{l:'총 근무시간',k:'tot',a:'r',f:r=>r.p.staffH.reduce((a,b)=>a+b,0)+'시간'}]);
+  const total=days.reduce((a,r)=>a+r.p.staffH.reduce((x,y)=>x+y,0),0);
+  return head()+`<div class="cond"><span class="f"><label class="k">기간</label><input value="${ymd(TODAY)} ~ ${ymd(addDays(TODAY,6))}" readonly style="width:190px" aria-label="기간"></span>
+    <span class="legend" style="margin:0"><span><i style="background:var(--surface-2)"></i>1명</span><span><i style="background:var(--primary-soft);border:1px solid var(--primary)"></i>2명</span><span><i style="background:var(--primary)"></i>3명 이상</span></span></div>`+
+  `<div class="heat">${dg({title:'시간대별 권장 근무 인원',rows:days,cols,foot:{tot:total+'시간'}})}</div>
+  <p class="hint">시간당 예상 잔 수를 바리스타 1명의 처리량 ${CAP}잔으로 나눠 올림했습니다. 오늘은 수요 예측 화면의 날씨 시나리오를, 다른 날은 최고기온 14℃와 맑음을 가정했습니다.</p>`;
+}
+
+/* ---------- 기준정보 ---------- */
+function rItem(){
+  return head(`<button class="tbtn" disabled>${ic('plus')}신규 품목</button>`)+
+  dg({title:'품목 마스터',rows:ING,cols:[
+    {l:'품목코드',k:'code'},{l:'품목명',k:'name',w:100},{l:'구분',k:'cat'},{l:'관리 단위',k:'unit',a:'c'},
+    {l:'단가',k:'cost',a:'r',f:i=>i.cost+'원/'+i.unit},{l:'포장 단위',k:'pack',a:'r',f:i=>qty(i,i.pack)},
+    {l:'리드타임',k:'L',a:'r',f:i=>i.L+'일'},{l:'일평균 사용',k:'d',a:'r',f:i=>qty(i,i.d)},{l:'안전재고',k:'ss',a:'r',f:i=>qty(i,i.ss)},
+    {l:'재주문점',k:'rop',a:'r',f:i=>qty(i,i.rop)},{l:'LOT 관리',k:'lot',a:'c',f:i=>i.lots?'<span class="st blue">사용</span>':''},
+    {l:'주 거래처',k:'sup',f:i=>VG[i.sup].name}]})+
+  '<p class="hint">일평균 사용량은 평일 5일, 최고기온 18℃ 예측의 평균으로 계산했고, 안전재고와 재주문점은 서비스 수준 95%로 계산합니다. 기준정보 수정은 관리자 권한이 필요해 데모에서는 조회만 가능합니다.</p>';
+}
+
+/* ---------- 렌더링 ---------- */
+const RENDER={dash:rDash,pos:rPos,sales:rSales,stock:rStock,ledger:rLedger,lot:rLot,po:rPO,recv:rRecv,vendor:rVendor,bom:rBom,cost:rCost,fc:rFc,staff:rStaff,item:rItem};
+function badge(id){
+  if(id==='stock')return ING.filter(i=>status(i).c!=='ok').length;
+  if(id==='po')return S.pos.filter(p=>p.status==='제안').length;
+  if(id==='recv')return S.pos.filter(p=>p.status==='발주완료').length;
+  if(id==='lot')return IG.milk.lots.filter(l=>ddn(l.exp)<=1).length;
+  return 0;
+}
+function renderSide(){
+  const q=S.menuQ.trim();let html='',any=false;
+  TREE.forEach(([g,icon,items])=>{
+    const vis=items.filter(id=>!q||SCR[id].t.includes(q)||g.includes(q));
+    if(!vis.length)return;any=true;
+    const open=q?true:S.exp[g];
+    html+=`<button class="e-grp" data-grp="${g}" aria-expanded="${open}">${ic(icon)}${g}<svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true">${ICON.chev}</svg></button>
+    <ul class="e-items" ${open?'':'hidden'}>${vis.map(id=>{const b=badge(id);return `<li><button class="e-item" data-open="${id}" ${S.cur===id?'aria-current="page"':''}>${SCR[id].t}${b?`<span class="b">${b}</span>`:''}</button></li>`}).join('')}</ul>`;
+  });
+  $('#side').innerHTML=any?html:'<p class="none">일치하는 메뉴가 없습니다.</p>';
+}
+function renderMdi(){
+  $('#mdi').innerHTML=S.open.map(id=>`<div class="e-tab ${id==='dash'?'home':''}" role="tab" tabindex="${id===S.cur?0:-1}" aria-selected="${id===S.cur}" data-tab="${id}">${SCR[id].t}${id==='dash'?'':`<button class="x" data-close="${id}" aria-label="${SCR[id].t} 닫기"><svg class="ico" viewBox="0 0 24 24" style="width:12px;height:12px">${ICON.x}</svg></button>`}</div>`).join('');
+}
+function renderFeed(){
+  $('#feed').innerHTML=S.feed.map(f=>`<li class="${f.kind}${f.fresh?' fresh':''}"><span class="t num">${f.time}</span><span class="tt">${f.title}</span>${f.lines.map(l=>`<span class="ln">${l}</span>`).join('<br>')}</li>`).join('');
+  S.feed.forEach(f=>f.fresh=false);
+  const n=$('#histN');n.hidden=!S.unread;n.textContent=S.unread;
+}
+function renderChrome(){
+  $('#eClock').textContent=ymd(TODAY)+' ('+DOW[TODAY.getDay()]+') '+hm(clock);
+  $('#status').innerHTML=`<span class="on">연결됨 (가상 서버)</span><span>화면 ${SCR[S.cur].sid}</span><span>사업장 모닝톤 커피 본점</span><span>마지막 조회 ${S.lastQuery}</span><span class="r">브루라인 ERP 프로토타입 v1.0</span>`;
+}
+function render(){
+  S.xg=null;
+  renderSide();renderMdi();
+  $('#content').innerHTML=RENDER[S.cur]();
+  renderFeed();renderChrome();
+}
+function openScreen(id){
+  if(!S.open.includes(id)){S.open.push(id);if(S.open.length>9)S.open.splice(1,1)}
+  S.cur=id;closeSide();render();$('#content').scrollTop=0;
+  const t=$(`[data-tab="${id}"]`);if(t)t.scrollIntoView({block:'nearest',inline:'nearest'});
+}
+function closeTab(id){
+  const i=S.open.indexOf(id);if(i<1)return;S.open.splice(i,1);
+  if(S.cur===id)S.cur=S.open[Math.max(0,i-1)];render();
+}
+function closeSide(){$('#side').classList.remove('open');$('#scrim').classList.remove('on');$('#hamBtn').setAttribute('aria-expanded','false')}
+function setHist(open){$('#hist').hidden=!open;$('#histBtn').setAttribute('aria-pressed',open);if(open)S.unread=0;renderFeed()}
+
+/* ---------- 이벤트 ---------- */
+const E=$('#erp');
+E.addEventListener('click',e=>{
+  const t=e.target.closest('button,[data-tab],tr.click');if(!t||t.disabled)return;
+  const d=t.dataset;
+  if(d.close){e.stopPropagation();return closeTab(d.close)}
+  if(d.open)return openScreen(d.open);
+  if(d.tab)return openScreen(d.tab);
+  if(d.grp){S.exp[d.grp]=!S.exp[d.grp];return renderSide()}
+  if(d.sell)return sell(d.sell);
+  if(t.id==='rush')return rushPeak();
+  if(d.place)return placePO([d.place]);
+  if(d.recv){const p=S.pos.find(x=>x.no===d.recv),i=IG[p.ing],v=parseFloat($(`[data-rq="${d.recv}"]`).value);
+    if(!(v>=0)){toast('검수 수량을 숫자로 입력하세요.');return}return receivePO(d.recv,i.div>1?v*i.div:v)}
+  if(d.discard)return discardLot(d.discard);
+  if(d.ing){S.selIng=d.ing;render();const r=$(`tr[data-ing="${d.ing}"]`);if(r)r.focus();return}
+  if(d.menu){S.selMenu=d.menu;render();const r=$(`tr[data-menu="${d.menu}"]`);if(r)r.focus();return}
+  if(d.seg){S.f[d.seg]=d.val;return render()}
+  if(d.preset){const p=PRESETS[d.preset];S.preset=d.preset;Object.assign(S.scn,{tmax:p.tmax,rain:p.rain,pm:p.pm});return render()}
+  if(d.act==='query'){S.lastQuery=hm(clock);render();toast(SCR[S.cur].t+'을(를) 다시 조회했습니다.');return}
+  if(d.act==='excel')return exportCSV();
+  if(d.act==='short')return orderShortages();
+  if(d.act==='newpo')return openDlg(S.cur==='stock'?S.selIng:'bean');
+  if(d.act==='placeSel'){const nos=$$('[data-chk]:checked').map(x=>x.dataset.chk);if(!nos.length){toast('확정할 발주를 먼저 선택하세요.');return}return placePO(nos)}
+  if(t.id==='hamBtn'){const o=!$('#side').classList.contains('open');$('#side').classList.toggle('open',o);$('#scrim').classList.toggle('on',o);t.setAttribute('aria-expanded',o);return}
+  if(t.id==='histBtn')return setHist($('#hist').hidden);
+  if(t.id==='histClose')return setHist(false);
+});
+$('#scrim').addEventListener('click',closeSide);
+E.addEventListener('keydown',e=>{
+  const t=e.target;
+  if((t.matches('[data-tab]')||t.matches('tr.click'))&&(e.key==='Enter'||e.key===' ')){e.preventDefault();t.click();return}
+  if(t.matches('[data-tab]')&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){
+    const i=S.open.indexOf(t.dataset.tab),n=S.open[(i+(e.key==='ArrowRight'?1:-1)+S.open.length)%S.open.length];
+    openScreen(n);const nt=$(`[data-tab="${n}"]`);if(nt)nt.focus();
+  }
+  if(e.key==='Escape'){closeSide()}
+});
+E.addEventListener('change',e=>{
+  const t=e.target,id=t.id;
+  if(t.matches('[data-checkall]')){$$('[data-chk]').forEach(c=>c.checked=t.checked);return}
+  if(t.dataset.f){S.f[t.dataset.f]=t.value;render();const n=$('#'+id);if(n)n.focus();return}
+  if(t.dataset.bom){const v=Math.max(0,parseFloat(t.value)||0),m=MG[S.selMenu],i=IG[t.dataset.bom],old=m.bom[i.id];
+    if(v===old)return;m.bom[i.id]=v;log('po','BOM 변경: '+mname(m),[i.name+' '+old+i.unit+'에서 '+v+i.unit+'로'],tick());
+    toast(mname(m)+' BOM을 저장했습니다.');render();const n=$(`[data-bom="${i.id}"]`);if(n)n.focus();return}
+  const map={fDow:'dow',fRain:'rain',fPm:'pm',fHol:'holiday'};
+  if(map[id]){S.scn[map[id]]=t.type==='checkbox'?t.checked:+t.value;if(id!=='fDow'&&id!=='fHol')S.preset=null;render();const n=$('#'+id);if(n)n.focus()}
+});
+E.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='fT'){S.scn.tmax=+t.value;S.preset=null;$('#fTo').textContent=t.value+'℃';$('#fcOut').innerHTML=fcOut();$$('[data-preset]').forEach(b=>b.setAttribute('aria-pressed','false'));renderChrome();return}
+  if(t.id==='stockQ'){S.f.stockQ=t.value.trim();render();const n=$('#stockQ');n.focus();n.setSelectionRange(n.value.length,n.value.length);return}
+  if(t.id==='menuQ'){S.menuQ=t.value;renderSide()}
+});
+$('#menuQ').addEventListener('keydown',e=>{if(e.key==='Enter'){const b=$('#side [data-open]');if(b){openScreen(b.dataset.open);e.target.value='';S.menuQ='';renderSide()}}});
+
+/* ---------- 신규 발주 대화상자 ---------- */
+const dlg=$('#poDlg');
+function dlgSync(){const i=IG[$('#dIng').value];$('#dSup').textContent=VG[i.sup].name+', 리드타임 '+i.L+'일';
+  $('#dSug').textContent=needOrder(i)?qty(i,suggestQty(i)):'목표 재고 이상 (발주 불필요)';
+  $('#dQty').step=i.div>1?'0.1':'1';$('#dQty').previousElementSibling.textContent='수량 ('+(i.div>1?i.big:i.unit)+')';
+  const q=needOrder(i)?suggestQty(i):i.pack;$('#dQty').value=i.div>1?(q/i.div).toFixed(1):q}
+function openDlg(id){
+  $('#dIng').innerHTML=ING.map(i=>`<option value="${i.id}" ${i.id===id?'selected':''}>${i.code} ${i.name}</option>`).join('');
+  dlgSync();
+  if(typeof dlg.showModal==='function'){dlg.returnValue='';dlg.showModal()}else toast('이 브라우저는 대화상자를 지원하지 않습니다.');
+}
+$('#dIng').addEventListener('change',dlgSync);
+dlg.addEventListener('close',()=>{
+  if(dlg.returnValue!=='ok')return;
+  const i=IG[$('#dIng').value],v=parseFloat($('#dQty').value);
+  if(!(v>0)){toast('수량을 0보다 크게 입력하세요.');return}
+  const p=newPO(i,i.div>1?Math.round(v*i.div):Math.round(v),'발주완료','점장');
+  log('po',p.no+' 신규 발주 등록',[i.name+' '+qty(i,p.qty)+', '+VG[i.sup].name,'입고 예정 '+ymd(p.due)]);
+  toast(p.no+' 발주를 등록했습니다.');S.guide.po=true;
+  if(S.cur!=='po')openScreen('po');else render();
+});
+
+/* ---------- 시작 ---------- */
+setHist(window.innerWidth>1180);
+render();
+})();
+</script>
+</body>
+</html>
